@@ -1,0 +1,107 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import dts from "vite-plugin-dts";
+import { resolve } from "path";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    dts({
+      insertTypesEntry: true,
+      exclude: ["**/*.test.tsx", "**/*.test.ts", "**/dev.tsx"],
+    }),
+  ],
+  build: {
+    lib: {
+      entry: resolve(__dirname, "src/index.ts"),
+      name: "ReactRichTextWithMath",
+      formats: ["es", "cjs"],
+      fileName: (format) => `index.${format === "es" ? "esm" : format}.js`,
+    },
+    rollupOptions: {
+      external: [
+        "react",
+        "react-dom",
+        "@tiptap/core",
+        "@tiptap/react",
+        "@tiptap/starter-kit",
+        "@tiptap/extension-blockquote",
+        "@tiptap/extension-character-count",
+        "@tiptap/extension-code-block-lowlight",
+        "@tiptap/extension-color",
+        "@tiptap/extension-dropcursor",
+        "@tiptap/extension-floating-menu",
+        "@tiptap/extension-gapcursor",
+        "@tiptap/extension-hard-break",
+        "@tiptap/extension-highlight",
+        "@tiptap/extension-history",
+        "@tiptap/extension-horizontal-rule",
+        "@tiptap/extension-image",
+        "@tiptap/extension-link",
+        "@tiptap/extension-placeholder",
+        "@tiptap/extension-strike",
+        "@tiptap/extension-subscript",
+        "@tiptap/extension-superscript",
+        "@tiptap/extension-table",
+        "@tiptap/extension-table-cell",
+        "@tiptap/extension-table-header",
+        "@tiptap/extension-table-row",
+        "@tiptap/extension-task-item",
+        "@tiptap/extension-task-list",
+        "@tiptap/extension-text-align",
+        "@tiptap/extension-text-style",
+        "@tiptap/extension-underline",
+        "@tiptap/extension-youtube",
+        "lowlight",
+        "mathlive",
+      ],
+      output: {
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+          "@tiptap/core": "TiptapCore",
+          "@tiptap/react": "TiptapReact",
+          "@tiptap/starter-kit": "TiptapStarterKit",
+          "@tiptap/extension-blockquote": "TiptapBlockquote",
+          "@tiptap/extension-character-count": "TiptapCharacterCount",
+          "@tiptap/extension-code-block-lowlight": "TiptapCodeBlockLowlight",
+          "@tiptap/extension-color": "TiptapColor",
+          "@tiptap/extension-dropcursor": "TiptapDropcursor",
+          "@tiptap/extension-floating-menu": "TiptapFloatingMenu",
+          "@tiptap/extension-gapcursor": "TiptapGapcursor",
+          "@tiptap/extension-hard-break": "TiptapHardBreak",
+          "@tiptap/extension-highlight": "TiptapHighlight",
+          "@tiptap/extension-history": "TiptapHistory",
+          "@tiptap/extension-horizontal-rule": "TiptapHorizontalRule",
+          "@tiptap/extension-image": "TiptapImage",
+          "@tiptap/extension-link": "TiptapLink",
+          "@tiptap/extension-placeholder": "TiptapPlaceholder",
+          "@tiptap/extension-strike": "TiptapStrike",
+          "@tiptap/extension-subscript": "TiptapSubscript",
+          "@tiptap/extension-superscript": "TiptapSuperscript",
+          "@tiptap/extension-table": "TiptapTable",
+          "@tiptap/extension-table-cell": "TiptapTableCell",
+          "@tiptap/extension-table-header": "TiptapTableHeader",
+          "@tiptap/extension-table-row": "TiptapTableRow",
+          "@tiptap/extension-task-item": "TiptapTaskItem",
+          "@tiptap/extension-task-list": "TiptapTaskList",
+          "@tiptap/extension-text-align": "TiptapTextAlign",
+          "@tiptap/extension-text-style": "TiptapTextStyle",
+          "@tiptap/extension-underline": "TiptapUnderline",
+          "@tiptap/extension-youtube": "TiptapYoutube",
+          lowlight: "Lowlight",
+          mathlive: "MathLive",
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === "style.css") {
+            return "react-latex-editor.css";
+          }
+          return assetInfo.name || "asset";
+        },
+      },
+    },
+    sourcemap: true,
+    emptyOutDir: true,
+    cssCodeSplit: false,
+  },
+});

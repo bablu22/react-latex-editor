@@ -1,0 +1,300 @@
+.editor-viewer {
+  width: 100%;
+  /* max-width: 1000px !important; */
+  /* margin: 0 auto; */
+  padding: 0rem;
+  /* background: #ffffff; */
+  border-radius: 1rem;
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */
+  /* border: 1px solid #e5e7eb; */
+  white-space: pre-wrap;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, sans-serif;
+  tab-size: 4;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  /* color: #374151; */
+}
+
+.viewer-content p {
+  margin: 0.75em 0;
+  min-height: 1.5em;
+}
+
+.viewer-content p:empty::before {
+  content: "";
+  display: inline-block;
+}
+
+.viewer-content h1,
+.viewer-content h2,
+.viewer-content h3,
+.viewer-content h4,
+.viewer-content h5,
+.viewer-content h6 {
+  margin: 1.2em 0 0.6em;
+  line-height: 1.3;
+  font-weight: 600;
+  page-break-after: avoid;
+  color: #111827;
+}
+
+.viewer-content h1 {
+  font-size: 2em;
+}
+
+.viewer-content h2 {
+  font-size: 1.5em;
+}
+
+.viewer-content h3 {
+  font-size: 1.25em;
+}
+
+.viewer-content h4 {
+  font-size: 1.1em;
+}
+
+.viewer-content h5 {
+  font-size: 1em;
+}
+
+.viewer-content h6 {
+  font-size: 0.9em;
+}
+
+.viewer-content ul,
+.viewer-content ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.viewer-content li {
+  margin: 0.25em 0;
+  padding-left: 0.25em;
+}
+
+.viewer-content li > p {
+  margin: 0.25em 0;
+}
+
+.viewer-content blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid #ddd;
+  background: #f9f9f9;
+}
+
+.viewer-content blockquote > *:first-child {
+  margin-top: 0;
+}
+
+.viewer-content blockquote > *:last-child {
+  margin-bottom: 0;
+}
+
+.viewer-content pre {
+  margin: 1em 0;
+  padding: 1em;
+  overflow-x: auto;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.viewer-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  background: #f5f5f5;
+}
+
+.viewer-content pre code {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+}
+
+.viewer-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  display: block;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.viewer-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  border: 1px solid #ddd;
+}
+
+.viewer-content th,
+.viewer-content td {
+  padding: 0.5em;
+  border: 1px solid #ddd;
+  min-width: 2em;
+}
+
+.viewer-content th {
+  font-weight: 600;
+  text-align: left;
+  background: #f5f5f5;
+}
+
+.viewer-content a {
+  color: #0066cc;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.viewer-content a:hover,
+.viewer-content a:focus {
+  text-decoration: none;
+  outline: none;
+}
+
+/* Math content styles */
+.viewer-content math-field {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.2em;
+}
+
+.viewer-content .katex {
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+.viewer-content .katex-display {
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+}
+
+/* Accessibility focus styles */
+.viewer-content :focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.viewer-content :focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Selection styles */
+.viewer-content ::selection {
+  background: #b3d4fc;
+  text-shadow: none;
+}
+
+/* Print styles */
+@media print {
+  .editor-viewer {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  .viewer-content a {
+    text-decoration: underline;
+  }
+
+  .viewer-content a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+
+  .viewer-content pre,
+  .viewer-content blockquote {
+    page-break-inside: avoid;
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .editor-viewer {
+    padding: 0rem;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+  }
+
+  .viewer-content h1 {
+    font-size: 1.5em;
+  }
+
+  .viewer-content h2 {
+    font-size: 1.15em;
+  }
+
+  .viewer-content h3 {
+    font-size: 1em;
+  }
+
+  .viewer-content pre {
+    padding: 0.75em;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-viewer {
+    padding: 0rem;
+    font-size: 0.875rem;
+  }
+
+  .viewer-content h1 {
+    font-size: 1.35em;
+  }
+
+  .viewer-content h2 {
+    font-size: 1.05em;
+  }
+
+  .viewer-content h3 {
+    font-size: 0.95em;
+  }
+
+  .viewer-content pre {
+    padding: 0.5em;
+  }
+
+  .viewer-content blockquote {
+    padding: 0.5em 0.75em;
+  }
+}
+
+/* Remove dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .editor-viewer,
+  .viewer-content,
+  .viewer-content h1,
+  .viewer-content h2,
+  .viewer-content h3,
+  .viewer-content blockquote,
+  .viewer-content pre,
+  .viewer-content code,
+  .viewer-content th,
+  .viewer-content td,
+  .viewer-content a {
+    /* Keep light theme styles */
+    background: #ffffff;
+    color: #374151;
+    border-color: #e5e7eb;
+  }
+}
+
+/* YouTube alignment in viewer */
+
+.viewer-content div[data-youtube-video] iframe {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  background: #000;
+}

@@ -1,0 +1,241 @@
+.math-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.math-dialog {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.math-dialog-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.math-dialog-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #666;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+}
+
+.math-toolbar-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 8px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
+}
+
+.tab-button {
+  padding: 4px 10px;
+  border: none;
+  background: none;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.tab-button.active {
+  background: #007bff;
+  color: white;
+}
+
+.math-toolbar-container {
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.math-toolbar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.math-symbol-button {
+  aspect-ratio: 1;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.math-symbol-button:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+
+.math-examples {
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.math-examples h4 {
+  margin: 0 0 6px 0;
+  color: #2c3e50;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.equation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.equation-buttons button {
+  padding: 4px 8px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.equation-buttons button:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+
+.math-editor {
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.math-dialog-math-field {
+  width: 100% !important;
+  min-height: 40px !important;
+  font-size: 1rem !important;
+  padding: 6px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  background-color: #fff !important;
+  transition: all 0.2s !important;
+}
+
+.math-dialog-math-field:focus {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+}
+
+.math-dialog-footer {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+}
+
+.cancel-button,
+.save-button {
+  padding: 4px 16px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button {
+  background: white;
+  border: 1px solid #e0e0e0;
+  color: #666;
+}
+
+.save-button {
+  background: #007bff;
+  border: none;
+  color: white;
+}
+
+.cancel-button:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.save-button:hover {
+  background: #0056b3;
+}
+
+/* Remove Scrollbar styling */
+.math-dialog::-webkit-scrollbar,
+.math-toolbar-grid::-webkit-scrollbar {
+  display: none;
+}
