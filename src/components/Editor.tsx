@@ -119,6 +119,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       onImageSelectionRequest();
     } else {
       setIsImageLoading(true);
+
       // Placeholder for image selection logic
       // This could be a modal or file picker to select images
       setTimeout(() => {

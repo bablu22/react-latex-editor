@@ -41,7 +41,7 @@ if (!customElements.get("math-field")) {
 }
 
 // Configure MathLive fonts - use absolute public path for compatibility
-MathfieldElement.fontsDirectory = "/fonts";
+MathfieldElement.fontsDirectory = null;
 
 interface MathEquationDialogProps {
   onClose: () => void;

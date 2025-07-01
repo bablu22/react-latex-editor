@@ -22,7 +22,7 @@ if (!customElements.get("math-field")) {
 }
 
 // Configure MathLive fonts
-// MathfieldElement.fontsDirectory = "/fonts";
+MathfieldElement.fontsDirectory = null;
 
 class MathNodeView extends Component<MathNodeViewProps> {
   private mathFieldRef: React.RefObject<MathfieldElement | null>;

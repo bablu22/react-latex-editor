@@ -1,6 +1,6 @@
 {
   "name": "react-latex-editor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A powerful React rich text editor with mathematical equation support, built on TipTap with MathLive integration",
   "type": "module",
   "main": "dist/index.cjs.js",
