@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react";
-import { MathfieldElement } from "mathlive";
+import { MathfieldElement } from "../types/mathlive";
 import { Node } from "@tiptap/pm/model";
 
 // Define the math node attributes interface
@@ -16,14 +16,6 @@ interface MathNodeViewProps extends ReactNodeViewProps {
   };
 }
 
-// Register MathLive custom element if not already
-if (!customElements.get("math-field")) {
-  customElements.define("math-field", MathfieldElement);
-}
-
-// Configure MathLive fonts
-MathfieldElement.fontsDirectory = null;
-
 class MathNodeView extends Component<MathNodeViewProps> {
   private mathFieldRef: React.RefObject<MathfieldElement | null>;
   private cleanup?: () => void;
@@ -33,7 +25,18 @@ class MathNodeView extends Component<MathNodeViewProps> {
     this.mathFieldRef = React.createRef<MathfieldElement>();
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    // Dynamically import mathlive and register the custom element if needed
+    if (typeof window !== "undefined") {
+      const mathlive = await import("mathlive");
+      if (!customElements.get("math-field")) {
+        customElements.define("math-field", mathlive.MathfieldElement);
+      }
+      // Optionally configure fontsDirectory if needed
+      if (mathlive.MathfieldElement) {
+        mathlive.MathfieldElement.fontsDirectory = null;
+      }
+    }
     this.setupMathField();
   }
 
