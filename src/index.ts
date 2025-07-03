@@ -4,10 +4,12 @@ export { default as Viewer } from "./components/Viewer";
 
 // Export types
 export type { EditorProps, EditorRef } from "./components/Editor";
+export type { MathfieldElement } from "./types/mathlive";
 
 // Export utilities
 export { addImage, getEditorProps, insertMath } from "./utils";
 export { getEditorExtensions } from "./utils/editorConfig";
+export { ensureMathLiveLoaded } from "./types/mathlive";
 
 // Export hooks
 export { useEditorKeyboard } from "./hooks/useEditorKeyboard";

@@ -52,6 +52,14 @@ This package requires React 18+ and React DOM 18+ as peer dependencies:
 npm install react react-dom
 ```
 
+### Next.js Compatibility
+
+This package is fully compatible with Next.js. For detailed integration
+instructions, see [NEXTJS.md](./NEXTJS.md).
+
+**Note**: The MathLive import issues in Next.js have been resolved in version
+1.0.1+. No additional configuration is needed.
+
 ## 🚀 Quick Start
 
 ```tsx

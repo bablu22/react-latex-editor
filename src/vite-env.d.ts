@@ -1,17 +1,4 @@
 /// <reference types="vite/client" />
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "math-field": React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
-        HTMLElement
-      > & {
-        ref?: React.Ref<MathfieldElement>;
-        readonly?: boolean;
-        class?: string;
-        value?: string;
-      };
-    }
-  }
-}
+// MathLive types are defined in src/types/mathlive.ts
+// This avoids duplicate declarations and ensures consistency

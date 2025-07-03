@@ -1,13 +1,16 @@
-import { MathfieldElement } from "mathlive";
 import React, { forwardRef, useEffect, useRef, useState } from "react";
+import { MathfieldElement, ensureMathLiveLoaded } from "../types/mathlive";
 import "../styles/mathEquationDialog.css";
+
+// Ensure MathLive is loaded (especially important for Next.js)
+ensureMathLiveLoaded();
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
       "math-field": React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
-        HTMLElement
+        React.HTMLAttributes<MathfieldElement>,
+        MathfieldElement
       > & {
         ref?: React.Ref<MathfieldElement>;
         value?: string;
@@ -35,13 +38,8 @@ declare global {
   }
 }
 
-// Register MathLive custom element if not already
-if (!customElements.get("math-field")) {
-  customElements.define("math-field", MathfieldElement);
-}
-
-// Configure MathLive fonts - use absolute public path for compatibility
-MathfieldElement.fontsDirectory = null;
+// The MathfieldElement is automatically registered when importing 'mathlive'
+// No need to manually register it
 
 interface MathEquationDialogProps {
   onClose: () => void;
