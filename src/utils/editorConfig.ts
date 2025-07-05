@@ -129,7 +129,7 @@ export function getEditorProps({
 }) {
   return {
     attributes: {
-      class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className} ${
+      class: `prose focus:outline-none ${className} ${
         placeholder ? "has-placeholder" : ""
       }`,
       "aria-label": "Rich text editor",

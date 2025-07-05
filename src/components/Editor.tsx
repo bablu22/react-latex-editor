@@ -86,7 +86,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     content: initialContent,
     editable: !readOnly,
     autofocus: autoFocus,
-    immediatelyRender: false,
+    // immediatelyRender: false,
     editorProps: getEditorProps({
       className,
       placeholder,
