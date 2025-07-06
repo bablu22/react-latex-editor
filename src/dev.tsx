@@ -7,7 +7,7 @@ import ImagePickerDialog from "./components/ImagePickerDialog";
 const DevApp: React.FC = () => {
   const editorRef = useRef<EditorRef>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
-
+  const [open, setOpen] = useState(false);
   const [content, setContent] = useState(
     "<p>Start typing your question here...</p>",
   );
@@ -49,9 +49,16 @@ const DevApp: React.FC = () => {
         <div>
           <h2>Preview</h2>
           <Viewer content={content} />
+          <button onClick={() => setOpen(!open)}>Open</button>
         </div>
       </div>
 
+      {open && (
+        <div>
+          <h2>Preview</h2>
+          <Viewer content={content} />
+        </div>
+      )}
       <ImagePickerDialog
         isOpen={showImageDialog}
         onClose={() => setShowImageDialog(false)}
