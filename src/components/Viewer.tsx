@@ -53,6 +53,7 @@ export const Viewer = ({
   const viewerRef = useRef<HTMLDivElement>(null);
   const [mathJaxLoaded, setMathJaxLoaded] = useState(false);
   const [mathJaxError, setMathJaxError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Initialize MathJax
   useEffect(() => {
@@ -144,49 +145,75 @@ export const Viewer = ({
     };
   }, [enableMath, mathJaxConfig]);
 
-  // Effect to render math when content or MathJax readiness changes
-  useEffect(() => {
-    if (!enableMath || !mathJaxLoaded || !viewerRef.current || !content) return;
+  // Function to process math elements and render with MathJax
+  const processMathElements = useCallback(async () => {
+    if (
+      !enableMath ||
+      !mathJaxLoaded ||
+      !viewerRef.current ||
+      !content ||
+      isProcessing
+    )
+      return;
 
-    const viewerContentElement =
-      viewerRef.current.querySelector(".viewer-content");
-    if (!viewerContentElement) return;
+    setIsProcessing(true);
 
-    // Find all elements with data-latex attribute within the viewer-content
-    const mathElements = viewerContentElement.querySelectorAll("[data-latex]");
-    mathElements.forEach((element: Element) => {
-      const latex = element.getAttribute("data-latex");
-      const dataType = element.getAttribute("data-type");
-      let newTextContent = "";
+    try {
+      const viewerContentElement =
+        viewerRef.current.querySelector(".viewer-content");
+      if (!viewerContentElement) return;
 
-      // Determine the correct delimiters based on data-type
-      if (dataType === "math") {
-        newTextContent = `$${latex}$`; // Use $ $ for inline math
-      } else {
-        newTextContent = `$$${latex}$$`; // Use $$ $$ for display math
-      }
+      // Find all elements with data-latex attribute within the viewer-content
+      const mathElements =
+        viewerContentElement.querySelectorAll("[data-latex]");
 
-      // Update the text content of the existing span element
-      element.textContent = newTextContent;
-    });
+      // Process each math element
+      mathElements.forEach((element: Element) => {
+        const latex = element.getAttribute("data-latex");
+        const dataType = element.getAttribute("data-type");
 
-    // Typeset the math with a small delay to ensure DOM update has settled
-    const timeoutId = setTimeout(() => {
+        if (!latex) return;
+
+        let newTextContent = "";
+
+        // Determine the correct delimiters based on data-type
+        if (dataType === "math") {
+          newTextContent = `$${latex}$`; // Use $ $ for inline math
+        } else {
+          newTextContent = `$$${latex}$$`; // Use $$ $$ for display math
+        }
+
+        // Update the text content of the existing span element
+        element.textContent = newTextContent;
+      });
+
+      // Use requestAnimationFrame to ensure DOM updates are complete
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      // Typeset the math
       if (
         window.MathJax &&
         typeof window.MathJax.typesetPromise === "function"
       ) {
-        window.MathJax.typesetPromise([viewerContentElement]).catch(
-          (err: Error) => {
-            console.error("MathJax typesetting failed:", err);
-            setMathJaxError("Failed to render mathematical equations");
-          },
-        );
+        await window.MathJax.typesetPromise([viewerContentElement]);
       }
-    }, 100);
+    } catch (err) {
+      console.error("MathJax typesetting failed:", err);
+      setMathJaxError("Failed to render mathematical equations");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [content, mathJaxLoaded, enableMath, isProcessing]);
+
+  // Effect to render math when content or MathJax readiness changes
+  useEffect(() => {
+    // Use a longer delay to ensure DOM is fully updated
+    const timeoutId = setTimeout(() => {
+      processMathElements();
+    }, 200);
 
     return () => clearTimeout(timeoutId);
-  }, [content, mathJaxLoaded, enableMath]);
+  }, [processMathElements]);
 
   const handleMathError = useCallback(() => {
     setMathJaxError(null);
