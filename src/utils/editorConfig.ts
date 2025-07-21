@@ -30,15 +30,6 @@ import BackgroundColor from "../extensions/BackgroundColor";
 import ResizableYoutubeExtension from "../extensions/ResizableYoutubeExtension";
 import TextStyle from "@tiptap/extension-text-style";
 
-// Custom extensions
-// import MathNode from "../components/MathNode";
-// import InlineMath from "../extensions/InlineMath";
-// import { ImageGroup } from "../extensions/ImageGroup";
-// import ResizableImageExtension from "../extensions/ResizableImageExtension";
-// import ResizableYoutubeExtension from "../extensions/ResizableYoutubeExtension";
-// import BackgroundColor from "../extensions/BackgroundColor";
-// import CustomTextStyle from "../extensions/CustomTextStyle";
-
 // Create lowlight instance with common languages
 const lowlight = createLowlight(common);
 

@@ -1199,3 +1199,8 @@ math-field[data-latex-display-mode="true"] {
   display: inline-block;
   box-shadow: 0 1px 2px rgba(59, 130, 246, 0.04);
 }
+
+/* disable virtual keyboard */
+math-field::part(virtual-keyboard-toggle) {
+  display: none;
+}

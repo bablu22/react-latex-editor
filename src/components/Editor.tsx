@@ -171,6 +171,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           readOnly={readOnly}
           onMathDialogOpen={() => setShowMathDialog(true)}
           onImagePicker={handleImagePicker}
+          key={showMathDialog ? "math-dialog" : "editor-toolbar"}
         />
 
         <EditorContent editor={editor} className="editor-content" />
