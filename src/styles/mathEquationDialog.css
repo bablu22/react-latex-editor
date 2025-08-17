@@ -10,6 +10,7 @@
   align-items: center;
   z-index: 100;
   animation: overlayFadeIn 0.2s ease-out;
+  overflow: auto;
 }
 
 @keyframes overlayFadeIn {
@@ -25,9 +26,9 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
+  width: 95vw;
   max-width: 700px;
-  max-height: 85vh;
+  max-height: 90vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -83,6 +84,8 @@
   background: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
   overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
 
 .tab-button {
@@ -109,6 +112,8 @@
 .math-toolbar-container {
   padding: 8px;
   border-bottom: 1px solid #e0e0e0;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .math-toolbar-grid {
@@ -142,6 +147,8 @@
 .math-examples {
   padding: 8px;
   border-bottom: 1px solid #e0e0e0;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .math-examples h4 {
@@ -202,6 +209,38 @@
   gap: 8px;
   background: #f8f9fa;
   border-radius: 0 0 8px 8px;
+  @media (max-width: 600px) {
+    .math-dialog {
+      max-width: 99vw;
+      width: 99vw;
+      margin: 2vh auto;
+      padding: 0;
+      max-height: 98vh;
+    }
+    .math-dialog-header,
+    .math-dialog-footer {
+      padding: 10px 2vw;
+    }
+    .math-toolbar-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 2px;
+      max-width: 100vw;
+      scrollbar-width: thin;
+    }
+    .tab-button {
+      padding: 4px 8px;
+      font-size: 0.95rem;
+    }
+    .math-toolbar-container {
+      max-height: 80px;
+      padding: 0 2vw;
+    }
+    .math-editor {
+      margin: 8px 0;
+      font-size: 0.95rem;
+    }
+  }
 }
 
 .cancel-button,
