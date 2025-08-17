@@ -1202,5 +1202,8 @@ math-field[data-latex-display-mode="true"] {
 
 /* disable virtual keyboard */
 math-field::part(virtual-keyboard-toggle) {
-  display: none;
+  display: none !important;
+}
+.ML__keyboard {
+  display: none !important;
 }
