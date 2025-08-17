@@ -303,6 +303,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
             onClick={() => insertSymbol(item.symbol)}
             title={item.title}
             className="math-symbol-button"
+            type="button"
           >
             {item.display}
           </button>
@@ -324,7 +325,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
         >
           <div className="math-dialog-header">
             <h3>Insert Math Equation</h3>
-            <button className="close-button" onClick={onClose}>
+            <button className="close-button" onClick={onClose} type="button">
               ×
             </button>
           </div>
@@ -336,6 +337,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
                   key={tab}
                   className={`tab-button ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
+                  type="button"
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
@@ -354,16 +356,26 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
                 onClick={() =>
                   insertSymbol("x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}")
                 }
+                type="button"
               >
                 Quadratic Formula
               </button>
-              <button onClick={() => insertSymbol("a^2 + b^2 = c^2")}>
+              <button
+                onClick={() => insertSymbol("a^2 + b^2 = c^2")}
+                type="button"
+              >
                 Pythagorean Theorem
               </button>
-              <button onClick={() => insertSymbol("A = \\pi r^2")}>
+              <button
+                onClick={() => insertSymbol("A = \\pi r^2")}
+                type="button"
+              >
                 Area of Circle
               </button>
-              <button onClick={() => insertSymbol("C = 2 \\pi r")}>
+              <button
+                onClick={() => insertSymbol("C = 2 \\pi r")}
+                type="button"
+              >
                 Circumference
               </button>
             </div>
@@ -372,10 +384,16 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
           <div className="math-examples">
             <h4>Higher Math</h4>
             <div className="equation-buttons">
-              <button onClick={() => insertSymbol("\\frac{dy}{dx}")}>
+              <button
+                onClick={() => insertSymbol("\\frac{dy}{dx}")}
+                type="button"
+              >
                 Derivative
               </button>
-              <button onClick={() => insertSymbol("e^{i\\pi} + 1 = 0")}>
+              <button
+                onClick={() => insertSymbol("e^{i\\pi} + 1 = 0")}
+                type="button"
+              >
                 Euler's Identity
               </button>
               <button
@@ -384,6 +402,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
                     "f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}",
                   )
                 }
+                type="button"
               >
                 Limit Definition of Derivative
               </button>
@@ -393,6 +412,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
                     "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}",
                   )
                 }
+                type="button"
               >
                 Gaussian Integral
               </button>
@@ -402,18 +422,26 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
           <div className="math-examples">
             <h4>Physics</h4>
             <div className="equation-buttons">
-              <button onClick={() => insertSymbol("F = ma")}>
+              <button onClick={() => insertSymbol("F = ma")} type="button">
                 Newton's 2nd Law
               </button>
-              <button onClick={() => insertSymbol("E = mc^2")}>E=mc²</button>
-              <button onClick={() => insertSymbol("KE = \\frac{1}{2} mv^2")}>
+              <button onClick={() => insertSymbol("E = mc^2")} type="button">
+                E=mc²
+              </button>
+              <button
+                onClick={() => insertSymbol("KE = \\frac{1}{2} mv^2")}
+                type="button"
+              >
                 Kinetic Energy
               </button>
-              <button onClick={() => insertSymbol("V = IR")}>Ohm's Law</button>
+              <button onClick={() => insertSymbol("V = IR")} type="button">
+                Ohm's Law
+              </button>
               <button
                 onClick={() =>
                   insertSymbol("\\Delta x \\Delta p \\geq \\frac{\\hbar}{2}")
                 }
+                type="button"
               >
                 Uncertainty Principle
               </button>
@@ -423,6 +451,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
                     "\\nabla \\cdot \\vec{E} = \\frac{\\rho}{\\epsilon_0}",
                   )
                 }
+                type="button"
               >
                 Gauss's Law
               </button>
@@ -432,20 +461,27 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
           <div className="math-examples">
             <h4>Chemistry</h4>
             <div className="equation-buttons">
-              <button onClick={() => insertSymbol("H_2O")}>
+              <button onClick={() => insertSymbol("H_2O")} type="button">
                 Water Formula
               </button>
-              <button onClick={() => insertSymbol("n = \\frac{m}{M}")}>
+              <button
+                onClick={() => insertSymbol("n = \\frac{m}{M}")}
+                type="button"
+              >
                 Molar Mass
               </button>
-              <button onClick={() => insertSymbol("PV = nRT")}>
+              <button onClick={() => insertSymbol("PV = nRT")} type="button">
                 Ideal Gas Law
               </button>
-              <button onClick={() => insertSymbol("2H_2 + O_2 \\to 2H_2O")}>
+              <button
+                onClick={() => insertSymbol("2H_2 + O_2 \\to 2H_2O")}
+                type="button"
+              >
                 Chemical Reaction
               </button>
               <button
                 onClick={() => insertSymbol("K_a = \\frac{[H^+][A^-]}{[HA]}")}
+                type="button"
               >
                 Acid Constant
               </button>
@@ -491,10 +527,10 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
           </div>
 
           <div className="math-dialog-footer">
-            <button className="cancel-button" onClick={onClose}>
+            <button className="cancel-button" onClick={onClose} type="button">
               Cancel
             </button>
-            <button className="save-button" onClick={handleSave}>
+            <button className="save-button" onClick={handleSave} type="button">
               Insert Equation
             </button>
           </div>
