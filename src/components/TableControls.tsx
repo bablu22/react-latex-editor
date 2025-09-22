@@ -29,6 +29,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           onClick={tableCommands.addColumnBefore}
           title="Add column before"
           disabled={readOnly}
+          type="button"
         >
           ←+
         </button>
@@ -36,6 +37,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           onClick={tableCommands.addColumnAfter}
           title="Add column after"
           disabled={readOnly}
+          type="button"
         >
           +→
         </button>
@@ -43,6 +45,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           onClick={tableCommands.deleteColumn}
           title="Delete column"
           disabled={readOnly}
+          type="button"
         >
           -
         </button>
@@ -52,6 +55,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           onClick={tableCommands.addRowBefore}
           title="Add row before"
           disabled={readOnly}
+          type="button"
         >
           ↑+
         </button>
@@ -59,6 +63,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           onClick={tableCommands.addRowAfter}
           title="Add row after"
           disabled={readOnly}
+          type="button"
         >
           +↓
         </button>
@@ -66,6 +71,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           onClick={tableCommands.deleteRow}
           title="Delete row"
           disabled={readOnly}
+          type="button"
         >
           -
         </button>
@@ -74,6 +80,8 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
         onClick={tableCommands.deleteTable}
         title="Delete table"
         disabled={readOnly}
+        className="delete-table-button"
+        type="button"
       >
         ×
       </button>

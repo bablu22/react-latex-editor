@@ -218,6 +218,7 @@ export const Viewer = ({
             onClick={handleMathError}
             className="error-close"
             aria-label="Close error message"
+            type="button"
           >
             ×
           </button>

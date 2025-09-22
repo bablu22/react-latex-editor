@@ -97,6 +97,7 @@ const ToolbarButton = memo(
             aria-label={title}
             aria-pressed={isActive}
             disabled={disabled}
+            type="button"
           >
             {children}
           </button>

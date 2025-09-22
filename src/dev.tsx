@@ -49,7 +49,9 @@ const DevApp: React.FC = () => {
         <div>
           <h2>Preview</h2>
           <Viewer content={content} />
-          <button onClick={() => setOpen(!open)}>Open</button>
+          <button type="button" onClick={() => setOpen(!open)}>
+            Open
+          </button>
         </div>
       </div>
 

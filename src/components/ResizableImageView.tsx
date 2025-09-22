@@ -209,6 +209,7 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
                   cursor: "pointer",
                   borderRadius: "2px",
                 }}
+                type="button"
               >
                 ←
               </button>
@@ -223,6 +224,7 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
                   cursor: "pointer",
                   borderRadius: "2px",
                 }}
+                type="button"
               >
                 ⟷
               </button>
@@ -237,6 +239,7 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
                   cursor: "pointer",
                   borderRadius: "2px",
                 }}
+                type="button"
               >
                 →
               </button>
