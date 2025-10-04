@@ -1,6 +1,5 @@
 import AlignmentControls from "./toolbars/AlignmentControls";
 import BlockControls from "./toolbars/BlockControls";
-import FontControls from "./toolbars/FontControls";
 import HeadingControls from "./toolbars/HeadingControls";
 import ImageAlignmentControls from "./toolbars/ImageAlignmentControls";
 import ImageGroupAlignmentControls from "./toolbars/ImageGroupAlignmentControls";
@@ -35,9 +34,6 @@ const EditorToolbar = (props: EditorToolbarProps) => {
     <div className={`toolbar`} role="toolbar" aria-label="Editor toolbar">
       {/* Main Toolbar Content */}
       <div className="toolbar-content">
-        <FontControls editor={editor} readOnly={readOnly} />
-        <div className="toolbar-divider"></div>
-
         <TextFormattingControls editor={editor} readOnly={readOnly} />
         <div className="toolbar-divider"></div>
 

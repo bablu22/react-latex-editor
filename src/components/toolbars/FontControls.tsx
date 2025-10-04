@@ -1,5 +1,4 @@
-import { FONT_FAMILIES, FONT_SIZES } from "../../constants/editorConstants";
-import { setBackgroundColor, setFontFamily, setFontSize } from "../../utils";
+import { setBackgroundColor } from "../../utils";
 
 export interface FontControlsProps {
   /**
@@ -14,50 +13,7 @@ export interface FontControlsProps {
 
 const FontControls = ({ editor, readOnly }: FontControlsProps) => {
   return (
-    <div className="toolbar-group" role="group" aria-label="Font style">
-      {/* Font Family */}
-      <div className="tooltip-container">
-        <select
-          onChange={(e) => setFontFamily(editor, e.target.value)}
-          disabled={!editor || readOnly}
-          defaultValue=""
-          style={{
-            height: 36,
-            marginRight: 4,
-            minWidth: 110,
-            fontSize: "12px",
-          }}
-          aria-label="Font family"
-        >
-          <option value="">Font</option>
-          {FONT_FAMILIES.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-        <div className="tooltip">Select Font Family</div>
-      </div>
-
-      {/* Font Size */}
-      <div className="tooltip-container">
-        <select
-          onChange={(e) => setFontSize(editor, e.target.value)}
-          disabled={!editor || readOnly}
-          defaultValue=""
-          style={{ height: 36, marginRight: 4, minWidth: 65, fontSize: "12px" }}
-          aria-label="Font size"
-        >
-          <option value="">Size</option>
-          {FONT_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-        <div className="tooltip">Select Font Size</div>
-      </div>
-
+    <div className="toolbar-group" role="group" aria-label="Color controls">
       {/* Text Color */}
       <div className="tooltip-container" style={{ position: "relative" }}>
         <input

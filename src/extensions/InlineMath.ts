@@ -80,23 +80,6 @@ const InlineMath = Extension.create({
           );
         },
       }),
-
-      // Inline math: $latex$ with display mode
-      new InputRule({
-        find: new RegExp(
-          `${inlineDelimiterEscaped}(.*?)${inlineDelimiterEscaped}$`,
-        ),
-        handler: ({ state, range, match }) => {
-          const [, latexContent] = match;
-          const { from, to } = range;
-
-          state.tr.replaceWith(
-            from,
-            to,
-            state.schema.nodes.math.create({ latex: latexContent }),
-          );
-        },
-      }),
     ];
   },
 });

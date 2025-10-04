@@ -1,3 +1,5 @@
+import { validateLatex } from "./helpers";
+
 export function setFontSize(editor: any, size: number | string) {
   editor.chain().focus().setMark("customTextStyle", { fontSize: size }).run();
 }
@@ -51,15 +53,27 @@ export function addImage(editor: any, urls: string | string[]) {
 
 export function insertMath(editor: any, latex: string) {
   try {
-    if (editor) {
-      editor
-        .chain()
-        .focus()
-        .insertContent({ type: "math", attrs: { latex } })
-        .run();
+    if (!editor) {
+      throw new Error("Editor instance is not available");
     }
+
+    const trimmedLatex = latex.trim();
+    const validation = validateLatex(trimmedLatex);
+
+    if (!validation.isValid) {
+      throw new Error(validation.error || "Invalid LaTeX expression");
+    }
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({ type: "math", attrs: { latex: trimmedLatex } })
+      .run();
   } catch (err) {
     console.error("Math insertion error:", err);
+    if (err instanceof Error) {
+      throw err;
+    }
     throw new Error("Error inserting math equation");
   }
 }

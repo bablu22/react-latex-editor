@@ -1,5 +1,11 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useCallback, useImperativeHandle, useState, forwardRef } from "react";
+import {
+  useCallback,
+  useImperativeHandle,
+  useState,
+  forwardRef,
+  useMemo,
+} from "react";
 import { addImage, getEditorProps, insertMath } from "../utils";
 import { getEditorExtensions } from "../utils/editorConfig";
 import EditorToolbar from "./EditorToolbar";
@@ -82,11 +88,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     showTableControls = true,
   } = props;
 
+  const extensions = useMemo(() => getEditorExtensions(), []);
+
   const editor = useEditor({
     content: initialContent,
     editable: !readOnly,
     autofocus: autoFocus,
-    // immediatelyRender: false,
+    immediatelyRender: false,
     editorProps: getEditorProps({
       className,
       placeholder,
@@ -96,7 +104,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         onChange(editor.getHTML());
       }
     },
-    extensions: getEditorExtensions(),
+    extensions,
   });
 
   useImperativeHandle(ref, () => ({

@@ -28,16 +28,20 @@ class MathNodeView extends Component<MathNodeViewProps> {
   async componentDidMount() {
     // Dynamically import mathlive and register the custom element if needed
     if (typeof window !== "undefined") {
-      const mathlive = await import("mathlive");
-      if (!customElements.get("math-field")) {
-        customElements.define("math-field", mathlive.MathfieldElement);
-      }
-      // Optionally configure fontsDirectory if needed
-      if (mathlive.MathfieldElement) {
-        mathlive.MathfieldElement.fontsDirectory = null;
+      try {
+        const mathlive = await import("mathlive");
+        if (!customElements.get("math-field")) {
+          customElements.define("math-field", mathlive.MathfieldElement);
+        }
+        // Optionally configure fontsDirectory if needed
+        if (mathlive.MathfieldElement) {
+          mathlive.MathfieldElement.fontsDirectory = null;
+        }
+        this.setupMathField();
+      } catch (error) {
+        console.error("Failed to load MathLive:", error);
       }
     }
-    this.setupMathField();
   }
 
   componentDidUpdate(prevProps: MathNodeViewProps) {
@@ -55,24 +59,36 @@ class MathNodeView extends Component<MathNodeViewProps> {
     if (!mathField) return;
 
     const handleInput = () => {
-      const newLatex = mathField.value;
-      if (newLatex !== this.props.node.attrs.latex) {
-        this.props.updateAttributes({ latex: newLatex });
+      try {
+        const newLatex = mathField.value;
+        if (newLatex !== this.props.node.attrs.latex) {
+          this.props.updateAttributes({ latex: newLatex });
+        }
+      } catch (error) {
+        console.error("Error updating math field:", error);
       }
     };
 
     // Wait for the next tick to ensure the field is mounted
     setTimeout(() => {
       if (mathField && mathField.isConnected) {
-        mathField.addEventListener("input", handleInput);
-        mathField.value = this.props.node.attrs.latex || "";
+        try {
+          mathField.addEventListener("input", handleInput);
+          mathField.value = this.props.node.attrs.latex || "";
+        } catch (error) {
+          console.error("Error setting up math field:", error);
+        }
       }
     }, 0);
 
     this.cleanup = () => {
       if (mathField && mathField.isConnected) {
-        mathField.removeEventListener("input", handleInput);
-        mathField.menuItems = [];
+        try {
+          mathField.removeEventListener("input", handleInput);
+          mathField.menuItems = [];
+        } catch (error) {
+          console.error("Error cleaning up math field:", error);
+        }
       }
     };
   }
