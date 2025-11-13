@@ -46,7 +46,7 @@ const DevApp: React.FC = () => {
           />
         </div>
 
-        <div>
+        <div className="!max-w-md mt-8 overflow-auto border p-4">
           <h2>Preview</h2>
           <Viewer content={content} />
           <button type="button" onClick={() => setOpen(!open)}>

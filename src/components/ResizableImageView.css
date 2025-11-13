@@ -1,8 +1,12 @@
+.resizable-image-wrapper {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 auto;
+}
+
 .resizable-image-container {
   position: relative;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  display: inline-block !important;
   line-height: 0;
   max-width: 100%;
   min-width: 40px;
@@ -23,16 +27,28 @@
 }
 
 /* Alignment */
-.resizable-image-container.align-left {
-  justify-content: flex-start;
+.resizable-image-wrapper {
+  width: 100% !important;
+  display: block !important;
 }
 
-.resizable-image-container.align-right {
-  justify-content: flex-end;
+.resizable-image-wrapper-align-left {
+  text-align: left !important;
 }
 
+.resizable-image-wrapper-align-center {
+  text-align: center !important;
+}
+
+.resizable-image-wrapper-align-right {
+  text-align: right !important;
+}
+
+.resizable-image-container.align-left,
+.resizable-image-container.align-right,
 .resizable-image-container.align-center {
-  justify-content: center;
+  display: inline-block !important;
+  /* Alignment is handled by text-align on the wrapper */
 }
 
 .resizable-image-container.ProseMirror-selectednode {

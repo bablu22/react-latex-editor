@@ -645,6 +645,22 @@ math-field[data-latex-display-mode="true"] {
   margin: 1em 0;
 }
 
+/* Prevent overflow for very long inline math or text without natural break points.
+   Allow math-field and math wrapper elements to wrap and respect container width. */
+.math-node-wrapper-inline,
+.math-node-wrapper-block,
+.math-node-wrapper-inline math-field,
+.math-node-wrapper-block math-field,
+math-field {
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Allow breaks anywhere if needed (helps with long LaTeX strings without spaces) */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  /* Ensure normal wrapping behavior inside the editor */
+  white-space: normal;
+}
+
 /* Tables */
 .ProseMirror table {
   border-collapse: collapse;
@@ -974,10 +990,69 @@ math-field[data-latex-display-mode="true"] {
 }
 
 /* Resizable Elements */
+.ProseMirror .resizable-image-wrapper,
+.ProseMirror p .resizable-image-wrapper,
+.ProseMirror > .resizable-image-wrapper,
+.resizable-image-wrapper {
+  width: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  clear: both !important;
+}
+
+/* Ensure paragraphs don't interfere with image alignment */
+.ProseMirror p:has(.resizable-image-wrapper) {
+  text-align: inherit !important;
+}
+
+.ProseMirror .resizable-image-wrapper-align-left,
+.ProseMirror p .resizable-image-wrapper-align-left,
+.ProseMirror > .resizable-image-wrapper-align-left,
+.resizable-image-wrapper-align-left,
+.resizable-image-wrapper[data-align="left"],
+.resizable-image-wrapper[style*="text-align: left"],
+.resizable-image-wrapper[style*="text-align:left"],
+.resizable-image-wrapper[style*="textAlign: left"],
+.resizable-image-wrapper[style*="textAlign:left"] {
+  text-align: left !important;
+}
+
+.ProseMirror .resizable-image-wrapper-align-center,
+.ProseMirror p .resizable-image-wrapper-align-center,
+.ProseMirror > .resizable-image-wrapper-align-center,
+.resizable-image-wrapper-align-center,
+.resizable-image-wrapper[data-align="center"],
+.resizable-image-wrapper[style*="text-align: center"],
+.resizable-image-wrapper[style*="text-align:center"],
+.resizable-image-wrapper[style*="textAlign: center"],
+.resizable-image-wrapper[style*="textAlign:center"] {
+  text-align: center !important;
+}
+
+.ProseMirror .resizable-image-wrapper-align-right,
+.ProseMirror p .resizable-image-wrapper-align-right,
+.ProseMirror > .resizable-image-wrapper-align-right,
+.resizable-image-wrapper-align-right,
+.resizable-image-wrapper[data-align="right"],
+.resizable-image-wrapper[style*="text-align: right"],
+.resizable-image-wrapper[style*="text-align:right"],
+.resizable-image-wrapper[style*="textAlign: right"],
+.resizable-image-wrapper[style*="textAlign:right"] {
+  text-align: right !important;
+}
+
+.ProseMirror .resizable-image-container,
+.ProseMirror p .resizable-image-container,
+.ProseMirror > .resizable-image-container,
 .resizable-image-container {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
+  position: relative !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+  margin: 4px !important;
+  vertical-align: top !important;
+  line-height: 0 !important;
 }
 
 .resizable-image-container img {

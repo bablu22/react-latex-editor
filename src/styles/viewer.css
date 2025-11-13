@@ -18,6 +18,17 @@
   /* color: #374151; */
 }
 
+/* Ensure general viewer content wraps and never forces horizontal overflow.
+   This complements the math/KaTeX-specific rules so long unbroken text
+   (or LaTeX strings) wrap inside the preview container. */
+.editor-viewer,
+.viewer-content {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .viewer-content p {
   margin: 0.75em 0;
   min-height: 1.5em;
@@ -129,6 +140,36 @@
   border: 1px solid #e5e7eb;
 }
 
+/* Image alignment in viewer */
+.viewer-content .resizable-image-wrapper {
+  width: 100%;
+  display: block;
+  margin: 1em 0;
+}
+
+.viewer-content .resizable-image-wrapper-align-left {
+  text-align: left;
+}
+
+.viewer-content .resizable-image-wrapper-align-center {
+  text-align: center;
+}
+
+.viewer-content .resizable-image-wrapper-align-right {
+  text-align: right;
+}
+
+.viewer-content .resizable-image-container {
+  display: inline-block;
+  position: relative;
+  max-width: 100%;
+}
+
+.viewer-content .resizable-image-container img {
+  display: block;
+  margin: 0;
+}
+
 .viewer-content table {
   width: 100%;
   border-collapse: collapse;
@@ -178,6 +219,18 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.5em 0;
+}
+
+/* Prevent overflow for long inline math or long unbroken LaTeX in the viewer.
+   Allow math-field and katex content to wrap and respect container width. */
+.viewer-content math-field,
+.viewer-content .katex,
+.viewer-content .katex * {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 
 /* Accessibility focus styles */

@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from "react";
-import { NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react";
 import { Node } from "@tiptap/pm/model";
+import { NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react";
+import React, { useCallback, useMemo, useState } from "react";
+import "./ResizableImageView.css";
 
 interface ImageNodeAttrs {
   src: string;
@@ -27,6 +28,9 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
   const [startY, setStartY] = useState(0);
   const [startWidth, setStartWidth] = useState(0);
   const [startHeight, setStartHeight] = useState(0);
+
+  // Force re-render when align changes
+  const align = useMemo(() => node.attrs.align || "left", [node.attrs.align]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, direction: string) => {
@@ -90,24 +94,38 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
     updateAttributes({ align });
   };
 
+  // Calculate alignment styles
+  const wrapperStyle = useMemo(() => {
+    const textAlignMap: Record<string, string> = {
+      left: "left",
+      center: "center",
+      right: "right",
+    };
+    return {
+      textAlign: (textAlignMap[align] || "left") as any,
+      width: "100%",
+      display: "block",
+      margin: "0",
+      padding: "0",
+      boxSizing: "border-box" as any,
+    };
+  }, [align]);
+
   return (
     <NodeViewWrapper
-      className={`resizable-image-wrapper ${
+      className={`resizable-image-wrapper resizable-image-wrapper-align-${align} ${
         selected ? "ProseMirror-selectednode" : ""
       }`}
-      style={{
-        textAlign: node.attrs.align as any,
-        position: "relative",
-        display: "inline-block",
-      }}
+      style={wrapperStyle}
+      data-align={align}
     >
       <div
-        className="resizable-image-container"
+        className={`resizable-image-container align-${align}`}
         style={{
-          position: "relative",
-          display: "inline-block",
           width: node.attrs.width || "auto",
           height: node.attrs.height || "auto",
+          display: "inline-block",
+          position: "relative",
         }}
       >
         <img
