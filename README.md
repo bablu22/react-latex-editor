@@ -54,11 +54,49 @@ npm install react react-dom
 
 ### Next.js Compatibility
 
-This package is fully compatible with Next.js. For detailed integration
-instructions, see [NEXTJS.md](./NEXTJS.md).
+This package is fully compatible with Next.js (both App Router and Pages
+Router).
 
-**Note**: The MathLive import issues in Next.js have been resolved in version
-1.0.1+. No additional configuration is needed.
+**⚠️ Important for Next.js users:** Due to server-side rendering (SSR), you need
+to use client-side only imports. See our
+[comprehensive Next.js guide](./NEXTJS.md) for:
+
+- ✅ Quick start examples for App Router and Pages Router
+- ✅ Solutions for common SSR errors (ReactCurrentDispatcher, window/document
+  undefined)
+- ✅ Complete working examples (blog editor, quiz system, etc.)
+- ✅ Performance optimization tips
+- ✅ TypeScript configuration
+
+**Quick Solution:**
+
+For **App Router** (Next.js 13+), use the `'use client'` directive:
+
+```tsx
+"use client";
+
+import { Editor, Viewer } from "react-latex-editor";
+import "react-latex-editor/styles";
+
+export default function MyEditor() {
+  const [content, setContent] = useState("<p>Start typing...</p>");
+
+  return <Editor initialContent={content} onChange={setContent} />;
+}
+```
+
+For **Pages Router**, use dynamic imports:
+
+```tsx
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(
+  () => import("react-latex-editor").then((mod) => mod.Editor),
+  { ssr: false },
+);
+```
+
+For detailed instructions and complete examples, see [NEXTJS.md](./NEXTJS.md).
 
 ## 🚀 Quick Start
 
