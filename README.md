@@ -183,6 +183,7 @@ function ContentViewer({ content }: { content: string }) {
     <Viewer
       content={content}
       className="my-viewer"
+      contentClassName="custom-content"
       enableMath={true}
       mathJaxConfig={{
         inlineMath: [["$", "$"]],
@@ -192,6 +193,71 @@ function ContentViewer({ content }: { content: string }) {
     />
   );
 }
+```
+
+##### Customizing Viewer Styles
+
+The Viewer component supports two ways to apply custom classes:
+
+- **`className`**: Applied to the outer wrapper container
+- **`contentClassName`**: Applied directly to the content div (recommended for
+  text styling)
+
+**Using Tailwind CSS:**
+
+```tsx
+<Viewer
+  content={content}
+  contentClassName="text-2xl font-serif leading-relaxed"
+/>
+```
+
+**Using Custom CSS:**
+
+```tsx
+<Viewer content={content} contentClassName="my-custom-content" />
+```
+
+```css
+.my-custom-content {
+  font-size: 1.5rem;
+  font-family: "Georgia", serif;
+  line-height: 1.8;
+  color: #333;
+}
+
+/* Style specific elements */
+.my-custom-content h1 {
+  font-size: 2.5rem;
+  color: #1a1a1a;
+}
+
+.my-custom-content p {
+  margin-bottom: 1.5rem;
+}
+```
+
+**Common Customization Examples:**
+
+```tsx
+// Large text with custom font
+<Viewer
+  content={content}
+  contentClassName="text-xl font-mono"
+/>
+
+// Custom spacing and colors
+<Viewer
+  content={content}
+  contentClassName="text-lg leading-loose text-gray-800"
+/>
+
+// Combine wrapper and content styling
+<Viewer
+  content={content}
+  className="bg-gray-50 p-8 rounded-lg"
+  contentClassName="text-base font-sans"
+/>
 ```
 
 ### Advanced Usage
@@ -274,6 +340,21 @@ import { Viewer } from "react-latex-editor";
 
 function ContentViewer({ content }: { content: string }) {
   return <Viewer content={content} />;
+}
+```
+
+### Custom Styled Viewer
+
+```tsx
+import { Viewer } from "react-latex-editor";
+
+function CustomStyledViewer({ content }: { content: string }) {
+  return (
+    <Viewer
+      content={content}
+      contentClassName="text-xl font-serif text-gray-900"
+    />
+  );
 }
 ```
 
@@ -403,12 +484,13 @@ import "react-latex-editor/styles";
 
 ### Viewer Props
 
-| Prop            | Type      | Default | Description                  |
-| --------------- | --------- | ------- | ---------------------------- |
-| `content`       | `string`  | -       | HTML content to display      |
-| `className`     | `string`  | `""`    | Additional CSS classes       |
-| `enableMath`    | `boolean` | `true`  | Enable MathJax rendering     |
-| `mathJaxConfig` | `object`  | `{}`    | Custom MathJax configuration |
+| Prop               | Type      | Default | Description                                |
+| ------------------ | --------- | ------- | ------------------------------------------ |
+| `content`          | `string`  | -       | HTML content to display                    |
+| `className`        | `string`  | `""`    | CSS classes for wrapper container          |
+| `contentClassName` | `string`  | `""`    | CSS classes for content div (text styling) |
+| `enableMath`       | `boolean` | `true`  | Enable MathJax rendering                   |
+| `mathJaxConfig`    | `object`  | `{}`    | Custom MathJax configuration               |
 
 ## 🔍 Troubleshooting
 

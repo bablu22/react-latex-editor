@@ -35,6 +35,7 @@ declare global {
 interface ViewerProps {
   content: string;
   className?: string;
+  contentClassName?: string;
   enableMath?: boolean;
   mathJaxConfig?: {
     inlineMath?: string[][];
@@ -46,6 +47,7 @@ interface ViewerProps {
 export const Viewer = ({
   content,
   className = "",
+  contentClassName = "",
   enableMath = true,
   mathJaxConfig = {},
 }: ViewerProps) => {
@@ -209,7 +211,10 @@ export const Viewer = ({
   return (
     <div className={`editor-viewer ${className}`} ref={viewerRef}>
       {/* Use key to force re-render when content changes */}
-      <div key={contentKey} className="viewer-content prose" />
+      <div
+        key={contentKey}
+        className={`viewer-content prose ${contentClassName}`}
+      />
 
       {mathJaxError && (
         <div className="error-message" role="alert">
