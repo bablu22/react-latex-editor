@@ -1,5 +1,5 @@
 import { Node } from "@tiptap/pm/model";
-import { NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react";
+import { NodeViewWrapper } from "@tiptap/react";
 import React, { useCallback, useMemo, useState } from "react";
 import "./ResizableImageView.css";
 
@@ -12,10 +12,12 @@ interface ImageNodeAttrs {
   align?: string;
 }
 
-interface ResizableImageViewProps extends ReactNodeViewProps {
+interface ResizableImageViewProps {
   node: Node & {
     attrs: ImageNodeAttrs;
   };
+  updateAttributes: (attrs: Partial<ImageNodeAttrs>) => void;
+  selected?: boolean;
 }
 
 const ResizableImageView: React.FC<ResizableImageViewProps> = ({

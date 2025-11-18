@@ -1,6 +1,6 @@
 import "./ResizableYoutubeView.css";
 import React, { useCallback, useState } from "react";
-import { NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react";
+import { NodeViewWrapper } from "@tiptap/react";
 import { Node } from "@tiptap/pm/model";
 
 interface YoutubeNodeAttrs {
@@ -10,10 +10,12 @@ interface YoutubeNodeAttrs {
   align: string;
 }
 
-interface ResizableYoutubeViewProps extends ReactNodeViewProps {
+interface ResizableYoutubeViewProps {
   node: Node & {
     attrs: YoutubeNodeAttrs;
   };
+  updateAttributes: (attrs: Partial<YoutubeNodeAttrs>) => void;
+  selected?: boolean;
 }
 
 const ResizableYoutubeView: React.FC<ResizableYoutubeViewProps> = ({

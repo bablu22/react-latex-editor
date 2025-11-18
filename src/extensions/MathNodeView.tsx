@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react";
+import { NodeViewWrapper } from "@tiptap/react";
 import { MathfieldElement } from "../types/mathlive";
 import { Node } from "@tiptap/pm/model";
 
@@ -9,11 +9,12 @@ interface MathNodeAttrs {
   displayMode: boolean;
 }
 
-// Define the props interface for MathNodeView - extending ReactNodeViewProps
-interface MathNodeViewProps extends ReactNodeViewProps {
+// Define the props interface for MathNodeView
+interface MathNodeViewProps {
   node: Node & {
     attrs: MathNodeAttrs;
   };
+  updateAttributes: (attrs: Partial<MathNodeAttrs>) => void;
 }
 
 class MathNodeView extends Component<MathNodeViewProps> {

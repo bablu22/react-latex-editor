@@ -30,7 +30,7 @@ const SpecialFeaturesControls = ({
     <div className="toolbar-group" role="group" aria-label="Special features">
       <ToolbarButton
         onClick={onMathDialogOpen}
-        title="Insert Math Equation"
+        title="Insert Math Equation (Ctrl/Cmd + M)"
         disabled={!editor || readOnly}
       >
         <svg

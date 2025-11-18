@@ -139,7 +139,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     }
   }, [editor, onImageSelectionRequest]);
 
-  useEditorKeyboard(editor);
+  useEditorKeyboard(editor, {
+    onMathDialogOpen: () => setShowMathDialog(true),
+  });
 
   const handleInsertMath = useCallback(
     (latex: string) => {

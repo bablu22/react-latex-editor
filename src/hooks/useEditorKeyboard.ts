@@ -1,6 +1,13 @@
 import { useEffect } from "react";
 
-export function useEditorKeyboard(editor: any) {
+export interface UseEditorKeyboardOptions {
+  onMathDialogOpen?: () => void;
+}
+
+export function useEditorKeyboard(
+  editor: any,
+  options?: UseEditorKeyboardOptions,
+) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!editor) return;
@@ -33,9 +40,18 @@ export function useEditorKeyboard(editor: any) {
           editor.chain().focus().setLink({ href: url }).run();
         }
       }
+      // Math Equation: Ctrl/Cmd + M
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key === "m" &&
+        options?.onMathDialogOpen
+      ) {
+        e.preventDefault();
+        options.onMathDialogOpen();
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [editor]);
+  }, [editor, options]);
 }
