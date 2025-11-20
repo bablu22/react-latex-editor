@@ -108,11 +108,17 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
         mathFieldRef.current.focus();
       }
 
-      // Add keyboard event listener for Escape key
+      // Add keyboard event listener for Escape and Enter keys
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
           onClose();
-        } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        } else if (
+          e.key === "Enter" &&
+          !e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey
+        ) {
+          e.preventDefault();
           handleSave();
         }
       };
