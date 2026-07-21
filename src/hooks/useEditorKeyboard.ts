@@ -35,10 +35,14 @@ export function useEditorKeyboard(
       // Link: Ctrl/Cmd + K
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        const url = window.prompt("Enter URL:");
-        if (url) {
-          editor.chain().focus().setLink({ href: url }).run();
+        const previousUrl = editor.getAttributes("link").href || "";
+        const url = window.prompt("Enter URL:", previousUrl);
+        if (url === null) return; // Cancelled
+        if (url === "") {
+          editor.chain().focus().extendMarkRange("link").unsetLink().run();
+          return;
         }
+        editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
       }
       // Math Equation: Ctrl/Cmd + M
       if (

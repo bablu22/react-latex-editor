@@ -25,10 +25,10 @@ const TextFormattingControls = ({
           const url = window.prompt("Enter URL:", previousUrl);
           if (url === null) return; // Cancelled
           if (url === "") {
-            editor.chain().focus().unsetLink().run();
+            editor.chain().focus().extendMarkRange("link").unsetLink().run();
             return;
           }
-          editor.chain().focus().setLink({ href: url }).run();
+          editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
         }}
         isActive={editor?.isActive("link")}
         title="Insert/Edit Link"
@@ -51,7 +51,7 @@ const TextFormattingControls = ({
       </ToolbarButton>
       {/* Unlink Button (only active if selection is a link) */}
       <ToolbarButton
-        onClick={() => editor?.chain().focus().unsetLink().run()}
+        onClick={() => editor?.chain().focus().extendMarkRange("link").unsetLink().run()}
         isActive={false}
         title="Remove Link"
         disabled={!editor || readOnly || !editor?.isActive("link")}
