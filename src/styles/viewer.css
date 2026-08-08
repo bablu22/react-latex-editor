@@ -34,6 +34,26 @@
   min-height: 1.5em;
 }
 
+.viewer-math-block {
+  display: block;
+  width: 100%;
+  margin: 0.5em 0;
+  text-align: center;
+  overflow-x: auto;
+  padding: 0.15rem 0;
+}
+
+.viewer-math-inline {
+  display: inline;
+  padding: 0 0.1em;
+}
+
+.viewer-content .resizable-youtube-wrapper,
+.viewer-content iframe {
+  max-width: 100%;
+  margin: 1rem 0;
+}
+
 .viewer-content p:empty::before {
   content: "";
   display: inline-block;

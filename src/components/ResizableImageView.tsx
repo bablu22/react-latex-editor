@@ -1,6 +1,6 @@
 import { Node } from "@tiptap/pm/model";
 import { NodeViewWrapper } from "@tiptap/react";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import "./ResizableImageView.css";
 
 interface ImageNodeAttrs {
@@ -10,6 +10,7 @@ interface ImageNodeAttrs {
   width?: string;
   height?: string;
   align?: string;
+  mediaType?: "image" | "svg";
 }
 
 interface ResizableImageViewProps {
@@ -20,59 +21,92 @@ interface ResizableImageViewProps {
   selected?: boolean;
 }
 
+const MIN_SIZE = 80;
+
 const ResizableImageView: React.FC<ResizableImageViewProps> = ({
   node,
   updateAttributes,
   selected,
 }) => {
-  const [isResizing, setIsResizing] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [startWidth, setStartWidth] = useState(0);
-  const [startHeight, setStartHeight] = useState(0);
+  const resizeRef = useRef<{
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    direction: string;
+    aspectRatio: number;
+  } | null>(null);
 
-  // Force re-render when align changes
   const align = useMemo(() => node.attrs.align || "left", [node.attrs.align]);
+  const isSvg = useMemo(() => {
+    if (node.attrs.mediaType === "svg") return true;
+    const src = node.attrs.src || "";
+    return (
+      src.startsWith("data:image/svg+xml") ||
+      src.includes("image/svg+xml") ||
+      /\.svg(\?|#|$)/i.test(src)
+    );
+  }, [node.attrs.mediaType, node.attrs.src]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, direction: string) => {
       e.preventDefault();
-      setIsResizing(true);
-      setStartX(e.clientX);
-      setStartY(e.clientY);
-      setStartWidth(parseInt(node.attrs.width || "300"));
-      setStartHeight(parseInt(node.attrs.height || "200"));
+      e.stopPropagation();
 
-      const handleMouseMove = (e: MouseEvent) => {
-        if (!isResizing) return;
+      const startWidth = parseInt(String(node.attrs.width || "300"), 10) || 300;
+      const startHeight =
+        parseInt(String(node.attrs.height || "200"), 10) || 200;
 
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
+      resizeRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startWidth,
+        startHeight,
+        direction,
+        aspectRatio: startWidth / Math.max(startHeight, 1),
+      };
 
-        let newWidth = startWidth;
-        let newHeight = startHeight;
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const state = resizeRef.current;
+        if (!state) return;
 
-        if (direction.includes("right")) {
-          newWidth = Math.max(100, startWidth + deltaX);
+        const deltaX = moveEvent.clientX - state.startX;
+        const deltaY = moveEvent.clientY - state.startY;
+        let newWidth = state.startWidth;
+        let newHeight = state.startHeight;
+
+        if (state.direction.includes("right")) {
+          newWidth = Math.max(MIN_SIZE, state.startWidth + deltaX);
         }
-        if (direction.includes("left")) {
-          newWidth = Math.max(100, startWidth - deltaX);
+        if (state.direction.includes("left")) {
+          newWidth = Math.max(MIN_SIZE, state.startWidth - deltaX);
         }
-        if (direction.includes("bottom")) {
-          newHeight = Math.max(100, startHeight + deltaY);
+        if (state.direction.includes("bottom")) {
+          newHeight = Math.max(MIN_SIZE, state.startHeight + deltaY);
         }
-        if (direction.includes("top")) {
-          newHeight = Math.max(100, startHeight - deltaY);
+        if (state.direction.includes("top")) {
+          newHeight = Math.max(MIN_SIZE, state.startHeight - deltaY);
+        }
+
+        // Keep aspect ratio when using corner handles without Shift
+        if (
+          !moveEvent.shiftKey &&
+          (state.direction === "bottom-right" ||
+            state.direction === "bottom-left" ||
+            state.direction === "top-right" ||
+            state.direction === "top-left")
+        ) {
+          newHeight = Math.max(MIN_SIZE, Math.round(newWidth / state.aspectRatio));
         }
 
         updateAttributes({
-          width: `${newWidth}px`,
-          height: `${newHeight}px`,
+          width: `${Math.round(newWidth)}px`,
+          height: `${Math.round(newHeight)}px`,
         });
       };
 
       const handleMouseUp = () => {
-        setIsResizing(false);
+        resizeRef.current = null;
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
       };
@@ -80,49 +114,39 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [
-      isResizing,
-      startX,
-      startY,
-      startWidth,
-      startHeight,
-      node.attrs.width,
-      node.attrs.height,
-      updateAttributes,
-    ],
+    [node.attrs.width, node.attrs.height, updateAttributes],
   );
 
-  const handleAlignChange = (align: string) => {
-    updateAttributes({ align });
+  const handleAlignChange = (nextAlign: string) => {
+    updateAttributes({ align: nextAlign });
   };
 
-  // Calculate alignment styles
-  const wrapperStyle = useMemo(() => {
-    const textAlignMap: Record<string, string> = {
-      left: "left",
-      center: "center",
-      right: "right",
-    };
-    return {
-      textAlign: (textAlignMap[align] || "left") as any,
+  const wrapperStyle = useMemo(
+    () => ({
+      textAlign: (align === "center" || align === "right" ? align : "left") as
+        | "left"
+        | "center"
+        | "right",
       width: "100%",
-      display: "block",
+      display: "block" as const,
       margin: "0",
       padding: "0",
-      boxSizing: "border-box" as any,
-    };
-  }, [align]);
+      boxSizing: "border-box" as const,
+    }),
+    [align],
+  );
 
   return (
     <NodeViewWrapper
-      className={`resizable-image-wrapper resizable-image-wrapper-align-${align} ${
-        selected ? "ProseMirror-selectednode" : ""
-      }`}
+      className={`resizable-image-wrapper resizable-image-wrapper-align-${align}${
+        isSvg ? " is-svg" : ""
+      } ${selected ? "ProseMirror-selectednode" : ""}`}
       style={wrapperStyle}
       data-align={align}
+      data-media-type={isSvg ? "svg" : "image"}
     >
       <div
-        className={`resizable-image-container align-${align}`}
+        className={`resizable-image-container align-${align}${isSvg ? " is-svg" : ""}`}
         style={{
           width: node.attrs.width || "auto",
           height: node.attrs.height || "auto",
@@ -130,136 +154,70 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
           position: "relative",
         }}
       >
+        {isSvg && <span className="svg-badge">SVG</span>}
         <img
           src={node.attrs.src}
-          alt={node.attrs.alt || ""}
+          alt={node.attrs.alt || (isSvg ? "SVG figure" : "")}
           title={node.attrs.title || ""}
           width={node.attrs.width}
           height={node.attrs.height}
+          draggable={false}
           style={{
             display: "block",
             maxWidth: "100%",
             height: "auto",
+            userSelect: "none",
           }}
         />
 
         {selected && (
           <>
-            {/* Resize handles */}
             <div
               className="resize-handle resize-handle-bottom-right"
               onMouseDown={(e) => handleMouseDown(e, "bottom-right")}
-              style={{
-                position: "absolute",
-                bottom: "-5px",
-                right: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "nw-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
             <div
               className="resize-handle resize-handle-bottom-left"
               onMouseDown={(e) => handleMouseDown(e, "bottom-left")}
-              style={{
-                position: "absolute",
-                bottom: "-5px",
-                left: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "ne-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
             <div
               className="resize-handle resize-handle-top-right"
               onMouseDown={(e) => handleMouseDown(e, "top-right")}
-              style={{
-                position: "absolute",
-                top: "-5px",
-                right: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "ne-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
             <div
               className="resize-handle resize-handle-top-left"
               onMouseDown={(e) => handleMouseDown(e, "top-left")}
-              style={{
-                position: "absolute",
-                top: "-5px",
-                left: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "nw-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
 
-            {/* Alignment controls */}
-            <div
-              className="alignment-controls"
-              style={{
-                position: "absolute",
-                top: "-30px",
-                left: "0",
-                display: "flex",
-                gap: "5px",
-                backgroundColor: "white",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "2px",
-              }}
-            >
+            <div className="alignment-controls" role="group" aria-label="Image alignment">
               <button
                 onClick={() => handleAlignChange("left")}
-                style={{
-                  padding: "2px 6px",
-                  border: "none",
-                  backgroundColor:
-                    node.attrs.align === "left" ? "#007acc" : "transparent",
-                  color: node.attrs.align === "left" ? "white" : "black",
-                  cursor: "pointer",
-                  borderRadius: "2px",
-                }}
+                className={align === "left" ? "is-active" : ""}
                 type="button"
+                aria-label="Align left"
+                aria-pressed={align === "left"}
               >
                 ←
               </button>
               <button
                 onClick={() => handleAlignChange("center")}
-                style={{
-                  padding: "2px 6px",
-                  border: "none",
-                  backgroundColor:
-                    node.attrs.align === "center" ? "#007acc" : "transparent",
-                  color: node.attrs.align === "center" ? "white" : "black",
-                  cursor: "pointer",
-                  borderRadius: "2px",
-                }}
+                className={align === "center" ? "is-active" : ""}
                 type="button"
+                aria-label="Align center"
+                aria-pressed={align === "center"}
               >
                 ⟷
               </button>
               <button
                 onClick={() => handleAlignChange("right")}
-                style={{
-                  padding: "2px 6px",
-                  border: "none",
-                  backgroundColor:
-                    node.attrs.align === "right" ? "#007acc" : "transparent",
-                  color: node.attrs.align === "right" ? "white" : "black",
-                  cursor: "pointer",
-                  borderRadius: "2px",
-                }}
+                className={align === "right" ? "is-active" : ""}
                 type="button"
+                aria-label="Align right"
+                aria-pressed={align === "right"}
               >
                 →
               </button>

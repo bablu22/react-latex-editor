@@ -2,70 +2,76 @@ import React, { useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { Editor, EditorRef } from "./components/Editor";
 import Viewer from "./components/Viewer";
-import ImagePickerDialog from "./components/ImagePickerDialog";
+import "./styles/editor.css";
+import "./styles/dev.css";
+
+const SAMPLE = `<p>Write exam questions with inline math like <span data-type="math" data-latex="E = mc^2">E = mc^2</span> right in the sentence.</p>
+<p>Text before <span data-type="math" data-latex="\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}" data-display-mode="true" class="math-node-wrapper math-node-wrapper-block">\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}</span> and text after stays editable.</p>
+<p>Use <strong>Ctrl/Cmd + M</strong> for the equation dialog, or type <code>$x^2$</code> for quick inline math.</p>`;
 
 const DevApp: React.FC = () => {
   const editorRef = useRef<EditorRef>(null);
-  const [showImageDialog, setShowImageDialog] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [content, setContent] = useState(
-    "<p>Start typing your question here...</p>",
-  );
-
-  // Handle image selection request
-  const handleImageSelectionRequest = () => {
-    setShowImageDialog(true);
-  };
-
-  // Handle image selection from dialog
-  const handleImageSelect = (urls: string[]) => {
-    if (editorRef.current) {
-      editorRef.current.addImage(urls);
-    }
-  };
+  const [content, setContent] = useState(SAMPLE);
 
   return (
-    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1>React Rich Text Editor - Image Usage Guide</h1>
+    <div className="dev-app">
+      <header className="dev-header">
+        <div className="dev-brand">
+          <span className="dev-mark" aria-hidden="true">
+            ∑
+          </span>
+          <div>
+            <h1>React LaTeX Editor</h1>
+            <p>Professional rich text with MathLive equations, tables, images &amp; video</p>
+          </div>
+        </div>
+        <div className="dev-actions">
+          <button
+            type="button"
+            className="dev-btn"
+            onClick={() => editorRef.current?.clearContent()}
+          >
+            Clear
+          </button>
+          <button
+            type="button"
+            className="dev-btn dev-btn-primary"
+            onClick={() => {
+              const html = editorRef.current?.getHTML() ?? "";
+              void navigator.clipboard?.writeText(html);
+            }}
+          >
+            Copy HTML
+          </button>
+        </div>
+      </header>
 
-      <div>
-        <div>
-          <h2>Editor</h2>
+      <main className="dev-layout">
+        <section className="dev-panel">
+          <div className="dev-panel-header">
+            <h2>Editor</h2>
+            <span className="dev-hint">Ctrl+M math · Ctrl+K link</span>
+          </div>
           <Editor
             ref={editorRef}
             initialContent={content}
-            onChange={(content) => {
-              console.log("Content changed:", content);
-              setContent(content);
-            }}
-            placeholder="Type here... Click the image button in the toolbar!"
-            readOnly={false}
-            autoFocus={true}
-            className="my-editor"
-            onImageSelectionRequest={handleImageSelectionRequest}
+            onChange={setContent}
+            placeholder="Start writing… insert math with Ctrl/Cmd+M"
+            autoFocus
+            minHeight="420px"
           />
-        </div>
+        </section>
 
-        <div className="!max-w-md mt-8 overflow-auto border p-4">
-          <h2>Preview</h2>
-          <Viewer content={content} />
-          <button type="button" onClick={() => setOpen(!open)}>
-            Open
-          </button>
-        </div>
-      </div>
-
-      {open && (
-        <div>
-          <h2>Preview</h2>
-          <Viewer content={content} />
-        </div>
-      )}
-      <ImagePickerDialog
-        isOpen={showImageDialog}
-        onClose={() => setShowImageDialog(false)}
-        onImageSelect={handleImageSelect}
-      />
+        <section className="dev-panel dev-preview">
+          <div className="dev-panel-header">
+            <h2>Live preview</h2>
+            <span className="dev-hint">MathJax render</span>
+          </div>
+          <div className="dev-preview-body">
+            <Viewer content={content} />
+          </div>
+        </section>
+      </main>
     </div>
   );
 };

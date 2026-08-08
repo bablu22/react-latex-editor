@@ -1,550 +1,331 @@
-# React Rich Text with Math
+# react-latex-editor
 
-<div align="center">
+[![npm version](https://img.shields.io/npm/v/react-latex-editor)](https://www.npmjs.com/package/react-latex-editor)
+[![npm downloads](https://img.shields.io/npm/dm/react-latex-editor)](https://www.npmjs.com/package/react-latex-editor)
+[![license](https://img.shields.io/npm/l/react-latex-editor)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-![npm version](https://img.shields.io/npm/v/react-latex-editor)
-![npm downloads](https://img.shields.io/npm/dm/react-latex-editor)
-![license](https://img.shields.io/npm/l/react-latex-editor)
-![typescript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
-![react](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+A React WYSIWYG editor with first-class LaTeX math support. Built on [TipTap](https://tiptap.dev/) with [MathLive](https://cortexjs.io/mathlive/) for equation authoring and MathJax for read-only rendering.
 
-A powerful React rich text editor with mathematical equation support, built on
-TipTap with MathLive integration. This package provides a comprehensive WYSIWYG
-editor that supports mathematical equations, tables, images, and more.
+**[npm](https://www.npmjs.com/package/react-latex-editor)** · **[Issues](https://github.com/bablu22/react-latex-editor/issues)** · **[Changelog](https://github.com/bablu22/react-latex-editor/releases)**
 
-[📖 Documentation](#documentation) • [🚀 Quick Start](#quick-start) •
-[🎯 Examples](#examples) • [🔧 API Reference](#api-reference) •
-[🎨 Customization](#customization)
+---
 
-</div>
+## Features
 
-## ✨ Features
+- **Rich text** — bold, italic, underline, strike, colors, fonts, headings, lists, links, code blocks, blockquotes
+- **Mathematics** — inline and display equations via MathLive; persists as HTML for round-trip editing
+- **Tables** — insert, resize, and edit with row/column controls
+- **Images** — upload, URL, drag-and-drop, resize, and alignment
+- **SVG** — paste SVG markup from the toolbar, or insert programmatically
+- **YouTube** — embed and resize videos
+- **Viewer** — read-only rendering with MathJax
+- **TypeScript** — full type definitions included
+- **Accessible toolbar** — keyboard shortcuts and ARIA labels
 
-- 🎨 **Rich Text Editing**: Full-featured WYSIWYG editor based on TipTap
-- 🧮 **Mathematical Equations**: Inline and block math support with MathLive
-- 📊 **Tables**: Create and edit tables with resizable columns
-- 🖼️ **Images**: Insert and resize images with alignment options
-- 🎥 **YouTube Videos**: Embed and resize YouTube videos
-- 🎨 **Text Formatting**: Bold, italic, underline, strikethrough, colors, and
-  more
-- 📝 **Code Blocks**: Syntax highlighting with lowlight
-- 📋 **Lists**: Bullet points, numbered lists, and task lists
-- 🔗 **Links**: Insert and edit hyperlinks
-- 📏 **Text Alignment**: Left, center, right alignment
-- 🎯 **Character Count**: Track content length
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- 🔧 **TypeScript Support**: Full TypeScript definitions included
-- ♿ **Accessibility**: ARIA labels and keyboard navigation support
-- 🎨 **Customizable**: CSS custom properties for easy theming
-- ⚡ **Performance**: Optimized bundle size (~90KB gzipped)
+---
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install react-latex-editor
 ```
 
-### Peer Dependencies
-
-This package requires React 18+ and React DOM 18+ as peer dependencies:
+**Peer dependencies:** React 18+ or 19+
 
 ```bash
 npm install react react-dom
 ```
 
-### Next.js Compatibility
+Import styles once in your app entry (or layout):
 
-This package is fully compatible with Next.js (both App Router and Pages
-Router).
+```tsx
+import "react-latex-editor/styles";
+```
 
-**⚠️ Important for Next.js users:** Due to server-side rendering (SSR), you need
-to use client-side only imports. See our
-[comprehensive Next.js guide](./NEXTJS.md) for:
+---
 
-- ✅ Quick start examples for App Router and Pages Router
-- ✅ Solutions for common SSR errors (ReactCurrentDispatcher, window/document
-  undefined)
-- ✅ Complete working examples (blog editor, quiz system, etc.)
-- ✅ Performance optimization tips
-- ✅ TypeScript configuration
+## Quick start
 
-**Quick Solution:**
+```tsx
+import { useRef, useState } from "react";
+import { Editor, Viewer, type EditorRef } from "react-latex-editor";
+import "react-latex-editor/styles";
 
-For **App Router** (Next.js 13+), use the `'use client'` directive:
+export default function App() {
+  const [content, setContent] = useState("<p></p>");
+  const editorRef = useRef<EditorRef>(null);
+
+  return (
+    <>
+      <Editor
+        ref={editorRef}
+        initialContent={content}
+        onChange={setContent}
+        placeholder="Start writing…"
+        minHeight="320px"
+      />
+      <Viewer content={content} />
+    </>
+  );
+}
+```
+
+---
+
+## Next.js
+
+This package uses browser APIs (DOM, MathLive). Load it on the client only.
+
+**App Router** — mark the module as a client component:
 
 ```tsx
 "use client";
 
-import { Editor, Viewer } from "react-latex-editor";
+import { useState } from "react";
+import { Editor } from "react-latex-editor";
 import "react-latex-editor/styles";
 
 export default function MyEditor() {
-  const [content, setContent] = useState("<p>Start typing...</p>");
-
+  const [content, setContent] = useState("<p></p>");
   return <Editor initialContent={content} onChange={setContent} />;
 }
 ```
 
-For **Pages Router**, use dynamic imports:
+**Pages Router** — disable SSR for the editor:
 
 ```tsx
 import dynamic from "next/dynamic";
 
 const Editor = dynamic(
-  () => import("react-latex-editor").then((mod) => mod.Editor),
+  () => import("react-latex-editor").then((m) => m.Editor),
   { ssr: false },
 );
 ```
 
-For detailed instructions and complete examples, see [NEXTJS.md](./NEXTJS.md).
+---
 
-## 🚀 Quick Start
+## Usage
 
-```tsx
-import React, { useRef, useState } from "react";
-import { Editor, Viewer, type EditorRef } from "react-latex-editor";
-import "react-latex-editor/styles";
-
-const App = () => {
-  const [content, setContent] = useState(
-    "<p>Start typing your content here...</p>",
-  );
-  const editorRef = useRef<EditorRef>(null);
-
-  return (
-    <div style={{ width: "60%", height: "100vh", margin: "0 auto" }}>
-      <Editor
-        ref={editorRef}
-        initialContent={content}
-        onChange={setContent}
-        placeholder="Type your content..."
-        autoFocus={true}
-      />
-      <Viewer content={content} />
-    </div>
-  );
-};
-
-export default App;
-```
-
-## 📖 Documentation
-
-### Basic Usage
-
-#### Editor Component
-
-The main `Editor` component provides a full-featured rich text editor:
-
-```tsx
-import { Editor, EditorRef } from "react-latex-editor";
-
-interface EditorProps {
-  initialContent?: string; // Initial HTML content
-  onChange?: (content: string) => void; // Content change callback
-  placeholder?: string; // Placeholder text
-  readOnly?: boolean; // Read-only mode
-  autoFocus?: boolean; // Auto-focus on mount
-  className?: string; // Additional CSS classes
-  onImageSelectionRequest?: () => void; // Image selection callback
-  minHeight?: string; // Minimum height (default: "300px")
-  maxHeight?: string; // Maximum height for scrolling
-  showCharacterCount?: boolean; // Show character count (default: true)
-  showTableControls?: boolean; // Show table controls (default: true)
-}
-```
-
-#### Editor Reference
-
-Access editor methods through the ref:
+### Editor ref
 
 ```tsx
 const editorRef = useRef<EditorRef>(null);
 
-// Get current HTML content
-const html = editorRef.current?.getHTML();
+editorRef.current?.getHTML();
+editorRef.current?.getJSON();
+editorRef.current?.getText();
+editorRef.current?.setContent("<p>Hello</p>");
+editorRef.current?.clearContent();
+editorRef.current?.focus();
 
-// Set content programmatically
-editorRef.current?.setContent("<p>New content</p>");
+// Images
+editorRef.current?.addImage("https://example.com/photo.png");
+editorRef.current?.addImage({
+  src: "https://example.com/diagram.svg",
+  mediaType: "svg",
+  alt: "Diagram",
+});
 
-// Add images programmatically
-editorRef.current?.addImage(["https://example.com/image.jpg"]);
+// SVG markup (same path as the toolbar “Paste SVG code” button)
+await editorRef.current?.addSvg(`<svg xmlns="http://www.w3.org/2000/svg">…</svg>`);
+
+// Files from your own <input type="file">
+await editorRef.current?.addImagesFromFiles(fileList);
 ```
 
-#### Viewer Component
+### Mathematics
 
-Display content in read-only mode with math rendering:
+Use the equation button in the toolbar (or `Ctrl`/`Cmd`+`M`). Equations can be inline or display mode. Content is stored in the document HTML so `getHTML()` / `setContent()` round-trip correctly.
+
+### Images and SVG
+
+| Action | Behavior |
+| --- | --- |
+| **Insert image** (toolbar) | Built-in picker (file / URL) unless you pass `onImageSelectionRequest` |
+| **Paste SVG code** (toolbar) | Opens a dialog to paste `<svg>…</svg>` markup — no extra setup |
+| Paste / drop | Image and SVG files, plus SVG markup, work in the editor surface |
+| Custom upload UI | Provide `onImageSelectionRequest`, then call `addImage` / `addImagesFromFiles` / `addSvg` on the ref |
 
 ```tsx
-import { Viewer } from "react-latex-editor";
+import { useRef } from "react";
+import { Editor, IMAGE_ACCEPT, type EditorRef } from "react-latex-editor";
 
-function ContentViewer({ content }: { content: string }) {
-  return (
-    <Viewer
-      content={content}
-      className="my-viewer"
-      contentClassName="custom-content"
-      enableMath={true}
-      mathJaxConfig={{
-        inlineMath: [["$", "$"]],
-        displayMath: [["$$", "$$"]],
-        packages: ["base", "ams"],
-      }}
-    />
-  );
-}
-```
-
-##### Customizing Viewer Styles
-
-The Viewer component supports two ways to apply custom classes:
-
-- **`className`**: Applied to the outer wrapper container
-- **`contentClassName`**: Applied directly to the content div (recommended for
-  text styling)
-
-**Using Tailwind CSS:**
-
-```tsx
-<Viewer
-  content={content}
-  contentClassName="text-2xl font-serif leading-relaxed"
-/>
-```
-
-**Using Custom CSS:**
-
-```tsx
-<Viewer content={content} contentClassName="my-custom-content" />
-```
-
-```css
-.my-custom-content {
-  font-size: 1.5rem;
-  font-family: "Georgia", serif;
-  line-height: 1.8;
-  color: #333;
-}
-
-/* Style specific elements */
-.my-custom-content h1 {
-  font-size: 2.5rem;
-  color: #1a1a1a;
-}
-
-.my-custom-content p {
-  margin-bottom: 1.5rem;
-}
-```
-
-**Common Customization Examples:**
-
-```tsx
-// Large text with custom font
-<Viewer
-  content={content}
-  contentClassName="text-xl font-mono"
-/>
-
-// Custom spacing and colors
-<Viewer
-  content={content}
-  contentClassName="text-lg leading-loose text-gray-800"
-/>
-
-// Combine wrapper and content styling
-<Viewer
-  content={content}
-  className="bg-gray-50 p-8 rounded-lg"
-  contentClassName="text-base font-sans"
-/>
-```
-
-### Advanced Usage
-
-#### Custom Toolbar
-
-The editor includes a comprehensive toolbar with:
-
-- **Text Formatting**: Bold, italic, underline, strikethrough
-- **Headings**: H1-H6
-- **Text Alignment**: Left, center, right
-- **Text Color**: Text color and background color
-- **Lists**: Bullet, numbered, task lists
-- **Tables**: Create and edit tables
-- **Media**: Images, YouTube videos
-- **Mathematical Equations**: Inline and block math
-- **Code Blocks**: Syntax highlighting
-- **Other**: Links, blockquotes, horizontal rules
-
-#### Mathematical Equations
-
-Insert mathematical equations using the math button in the toolbar:
-
-```tsx
-// Inline math: $x^2 + y^2 = z^2$
-// Block math: $$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
-```
-
-The editor supports both inline and block math equations with a comprehensive
-symbol palette powered by MathLive.
-
-#### Tables
-
-Create tables with the table button:
-
-- Add/remove rows and columns
-- Merge/split cells
-- Resize columns
-- Align content
-
-#### Images
-
-Insert images with:
-
-- Drag and drop support
-- URL input
-- Resize handles
-- Alignment options (left, center, right)
-- Alt text support
-
-#### YouTube Videos
-
-Embed YouTube videos with:
-
-- URL input
-- Resize handles
-- Responsive design
-
-## 🎯 Examples
-
-### Basic Editor
-
-```tsx
-import { Editor } from "react-latex-editor";
-
-function BasicEditor() {
-  return (
-    <Editor
-      placeholder="Start writing your content..."
-      onChange={(content) => console.log(content)}
-    />
-  );
-}
-```
-
-### Read-only Viewer
-
-```tsx
-import { Viewer } from "react-latex-editor";
-
-function ContentViewer({ content }: { content: string }) {
-  return <Viewer content={content} />;
-}
-```
-
-### Custom Styled Viewer
-
-```tsx
-import { Viewer } from "react-latex-editor";
-
-function CustomStyledViewer({ content }: { content: string }) {
-  return (
-    <Viewer
-      content={content}
-      contentClassName="text-xl font-serif text-gray-900"
-    />
-  );
-}
-```
-
-### Custom Height Editor
-
-```tsx
-import { Editor } from "react-latex-editor";
-
-function CustomHeightEditor() {
-  return (
-    <Editor
-      minHeight="400px"
-      maxHeight="600px"
-      placeholder="Content with custom height..."
-    />
-  );
-}
-```
-
-### Editor with Image Handler
-
-```tsx
-import { Editor } from "react-latex-editor";
-
-function EditorWithImageHandler() {
-  const handleImageRequest = () => {
-    // Open your image picker/modal here
-    const imageUrl = prompt("Enter image URL:");
-    if (imageUrl) {
-      // Handle image insertion
-    }
-  };
+function EditorWithCustomUpload() {
+  const editorRef = useRef<EditorRef>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <Editor
-      onImageSelectionRequest={handleImageRequest}
-      placeholder="Editor with custom image handling..."
-    />
-  );
-}
-```
-
-### Minimal Editor
-
-```tsx
-import { Editor } from "react-latex-editor";
-
-function MinimalEditor() {
-  return (
-    <Editor
-      showCharacterCount={false}
-      showTableControls={false}
-      placeholder="Minimal editor..."
-    />
-  );
-}
-```
-
-### Dark Mode Editor
-
-```tsx
-import { Editor } from "react-latex-editor";
-
-function DarkModeEditor() {
-  return (
-    <div className="dark-theme">
-      <Editor
-        placeholder="Dark mode editor..."
-        onChange={(content) => console.log(content)}
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={IMAGE_ACCEPT}
+        multiple
+        hidden
+        onChange={async (e) => {
+          if (e.target.files?.length) {
+            await editorRef.current?.addImagesFromFiles(e.target.files);
+          }
+          e.target.value = "";
+        }}
       />
-    </div>
+      <Editor
+        ref={editorRef}
+        onImageSelectionRequest={() => inputRef.current?.click()}
+      />
+    </>
   );
 }
 ```
 
-### Math-Focused Editor
+### Viewer
 
 ```tsx
-import { Editor } from "react-latex-editor";
+import { Viewer } from "react-latex-editor";
 
-function MathEditor() {
-  return (
-    <Editor
-      initialContent="<p>Solve the equation: $x^2 + 5x + 6 = 0$</p>"
-      placeholder="Write mathematical content..."
-      onChange={(content) => console.log(content)}
-    />
-  );
-}
+<Viewer
+  content={html}
+  className="viewer-shell"
+  contentClassName="prose max-w-none"
+  enableMath
+/>
 ```
 
-## 🎨 Customization
-
-### Import Styles
-
-Import the default styles:
-
-```tsx
-import "react-latex-editor/styles";
-```
-
-## 🔧 API Reference
-
-### Editor Props
-
-| Prop                      | Type                        | Default                              | Description                  |
-| ------------------------- | --------------------------- | ------------------------------------ | ---------------------------- |
-| `initialContent`          | `string`                    | `"<p>Start typing something...</p>"` | Initial HTML content         |
-| `onChange`                | `(content: string) => void` | -                                    | Content change callback      |
-| `placeholder`             | `string`                    | `"Start typing..."`                  | Placeholder text             |
-| `readOnly`                | `boolean`                   | `false`                              | Read-only mode               |
-| `autoFocus`               | `boolean`                   | `false`                              | Auto-focus on mount          |
-| `className`               | `string`                    | `""`                                 | Additional CSS classes       |
-| `onImageSelectionRequest` | `() => void`                | -                                    | Image selection callback     |
-| `minHeight`               | `string`                    | `"300px"`                            | Minimum height               |
-| `maxHeight`               | `string`                    | -                                    | Maximum height for scrolling |
-| `showCharacterCount`      | `boolean`                   | `true`                               | Show character count         |
-| `showTableControls`       | `boolean`                   | `true`                               | Show table controls          |
-
-### EditorRef Methods
-
-| Method       | Parameters        | Description                 |
-| ------------ | ----------------- | --------------------------- |
-| `getHTML`    | -                 | Get current HTML content    |
-| `setContent` | `content: string` | Set editor content          |
-| `addImage`   | `urls: string[]`  | Add images programmatically |
-
-### Viewer Props
-
-| Prop               | Type      | Default | Description                                |
-| ------------------ | --------- | ------- | ------------------------------------------ |
-| `content`          | `string`  | -       | HTML content to display                    |
-| `className`        | `string`  | `""`    | CSS classes for wrapper container          |
-| `contentClassName` | `string`  | `""`    | CSS classes for content div (text styling) |
-| `enableMath`       | `boolean` | `true`  | Enable MathJax rendering                   |
-| `mathJaxConfig`    | `object`  | `{}`    | Custom MathJax configuration               |
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Styles not loading**: Make sure to import the styles:
-
-   ```tsx
-   import "react-latex-editor/styles";
-   ```
-
-2. **Math equations not rendering**: Ensure MathJax is properly configured in
-   the Viewer component.
-
-3. **TypeScript errors**: Make sure you're using React 18+ and have the latest
-   TypeScript definitions.
-
-4. **Images not uploading**: Implement the `onImageSelectionRequest` callback
-   for custom image handling.
-
-### Getting Help
-
-If you encounter any issues:
-
-1. Check the [examples](#examples) section
-2. Review the [API reference](#api-reference)
-3. Open an issue on GitHub with a minimal reproduction
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our contributing guidelines before
-submitting pull requests.
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- 📖 [Documentation](https://github.com/bablu22/react-latex-editor#readme)
-- 🐛 [Report Issues](https://github.com/bablu22/react-latex-editor/issues)
-- 💬 [Discussions](https://github.com/bablu22/react-latex-editor/discussions)
-- ⭐ [Star on GitHub](https://github.com/bablu22/react-latex-editor)
+- `className` — wrapper element
+- `contentClassName` — content root (prefer this for typography)
 
 ---
 
-<div align="center">
+## API
 
-Made with ❤️ by [Bablu Mia](https://github.com/bablu22)
+### `Editor` props
 
-</div>
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `initialContent` | `string` | `"<p></p>"` | Initial HTML |
+| `onChange` | `(html: string) => void` | — | Fires on every update |
+| `placeholder` | `string` | `"Start typing..."` | Empty-state placeholder |
+| `readOnly` | `boolean` | `false` | Disable editing |
+| `autoFocus` | `boolean` | `false` | Focus on mount |
+| `className` | `string` | `""` | Extra class on the editor |
+| `minHeight` | `string` | `"300px"` | Minimum editor height |
+| `maxHeight` | `string` | — | Max height (scrollable) |
+| `showCharacterCount` | `boolean` | `true` | Footer character / word stats |
+| `showTableControls` | `boolean` | `true` | Table editing chrome |
+| `onImageSelectionRequest` | `() => void` | — | Custom image picker; omit for built-in |
+| `onError` | `(error: Error) => void` | — | Error callback |
+
+### `EditorRef` methods
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `getHTML` | `() => string` | Serialized HTML |
+| `getJSON` | `() => Record<string, unknown>` | TipTap JSON document |
+| `getText` | `() => string` | Plain text |
+| `setContent` | `(content: string) => void` | Replace document |
+| `clearContent` | `() => void` | Empty the editor |
+| `focus` / `blur` | `() => void` | Focus management |
+| `isEmpty` | `() => boolean` | Whether the doc is empty |
+| `getEditor` | `() => Editor \| null` | Underlying TipTap instance |
+| `addImage` | `(input: ImageInsertInput) => void` | Insert image(s) or SVG figures |
+| `addSvg` | `(source: string \| File, options?) => Promise<void>` | Insert SVG from markup, URL, or file |
+| `addImagesFromFiles` | `(files: FileList \| File[]) => Promise<void>` | Insert from a file list (data URLs) |
+
+### `Viewer` props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `content` | `string` | — | HTML to display |
+| `className` | `string` | `""` | Wrapper class |
+| `contentClassName` | `string` | `""` | Content class |
+| `enableMath` | `boolean` | `true` | Enable MathJax |
+| `mathJaxConfig` | `object` | `{}` | MathJax overrides |
+
+### Notable exports
+
+```tsx
+import {
+  Editor,
+  Viewer,
+  IMAGE_ACCEPT,
+  insertMath,
+  insertSvg,
+  addImagesFromFiles,
+  type EditorProps,
+  type EditorRef,
+  type ImageInsertItem,
+  type ImageInsertInput,
+} from "react-latex-editor";
+```
+
+---
+
+## Examples
+
+**Minimal**
+
+```tsx
+<Editor onChange={setContent} showCharacterCount={false} showTableControls={false} />
+```
+
+**Fixed height**
+
+```tsx
+<Editor minHeight="400px" maxHeight="640px" onChange={setContent} />
+```
+
+**Math-heavy content**
+
+```tsx
+<Editor
+  initialContent="<p>Quadratic formula: </p>"
+  placeholder="Write with equations…"
+  onChange={setContent}
+/>
+```
+
+**Styled viewer**
+
+```tsx
+<Viewer
+  content={content}
+  className="rounded-lg bg-neutral-50 p-6"
+  contentClassName="text-lg leading-relaxed"
+/>
+```
+
+---
+
+## Troubleshooting
+
+| Issue | Fix |
+| --- | --- |
+| Unstyled editor | Import `react-latex-editor/styles` |
+| Next.js `window is not defined` | Use `"use client"` or `dynamic(..., { ssr: false })` |
+| Math missing in Viewer | Keep `enableMath` enabled (default); check that content includes math nodes from the Editor |
+| Custom image button does nothing | Call `addImagesFromFiles` / `addImage` / `addSvg` inside your `onImageSelectionRequest` handler |
+| SVG not inserting | Use the **Paste SVG code** toolbar button, or `addSvg` with full `<svg>…</svg>` markup |
+
+---
+
+## Requirements
+
+- Node.js 16+
+- React 18 or 19
+- Modern evergreen browsers
+
+---
+
+## Contributing
+
+1. Fork and create a feature branch
+2. Install dependencies and run `npm run dev`
+3. Keep changes focused; run `npm run type-check` before opening a PR
+4. Open a pull request with a clear description
+
+---
+
+## License
+
+[MIT](./LICENSE) © [Bablu Mia](https://github.com/bablu22)

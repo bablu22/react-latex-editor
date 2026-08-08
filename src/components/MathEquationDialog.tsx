@@ -50,7 +50,7 @@ declare global {
 
 interface MathEquationDialogProps {
   onClose: () => void;
-  onInsert: (latex: string) => void;
+  onInsert: (latex: string, displayMode?: boolean) => void;
   initialValue?: string;
 }
 
@@ -79,56 +79,76 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
     const [latex, setLatex] = useState(initialValue);
     const [activeTab, setActiveTab] = useState<keyof TabSections>("basic");
     const [isInserting, setIsInserting] = useState(false);
+    const [displayMode, setDisplayMode] = useState(false);
     const mathFieldRef = useRef<MathfieldElement | null>(null);
     const dialogRef = useRef<HTMLDivElement>(null);
+    const latexRef = useRef(latex);
+    latexRef.current = latex;
+
     const handleInput = useCallback((e: any) => {
       setLatex(e.target.value);
     }, []);
 
     const handleSave = useCallback(() => {
+      const value = latexRef.current.trim();
+      if (!value) return;
+
       setIsInserting(true);
       try {
-        onInsert(latex);
+        onInsert(value, displayMode);
         onClose();
       } finally {
         setIsInserting(false);
       }
-    }, [latex, onInsert, onClose]);
+    }, [onInsert, onClose, displayMode]);
 
     const insertSymbol = useCallback((symbol: string) => {
       if (mathFieldRef.current) {
         mathFieldRef.current.insert(symbol);
         mathFieldRef.current.focus();
+        setLatex(mathFieldRef.current.value);
       }
     }, []);
 
+    // Focus math field once on mount
     useEffect(() => {
-      if (mathFieldRef.current) {
-        mathFieldRef.current.value = latex;
-        mathFieldRef.current.focus();
-      }
+      const id = requestAnimationFrame(() => {
+        if (mathFieldRef.current) {
+          if (initialValue) {
+            mathFieldRef.current.value = initialValue;
+          }
+          mathFieldRef.current.focus();
+        }
+      });
+      return () => cancelAnimationFrame(id);
+    }, [initialValue]);
 
-      // Add keyboard event listener for Escape and Enter keys
+    // Escape to close; Ctrl/Cmd+Enter to insert (Enter alone stays in math field)
+    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
+          e.preventDefault();
           onClose();
-        } else if (
-          e.key === "Enter" &&
-          !e.shiftKey &&
-          !e.ctrlKey &&
-          !e.metaKey
-        ) {
+          return;
+        }
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           handleSave();
         }
       };
 
       document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [onClose, handleSave]);
 
+    // Trap focus / lock body scroll while open
+    useEffect(() => {
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
       return () => {
-        document.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = previousOverflow;
       };
-    }, [latex, onClose, handleSave]);
+    }, []);
     const toolbarSections: TabSections = useMemo(
       () => ({
         basic: [
@@ -393,9 +413,7 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
     return (
       <div
         className="math-dialog-overlay"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+        onClick={onClose}
         role="dialog"
         aria-modal="true"
         aria-labelledby="math-dialog-title"
@@ -652,6 +670,18 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
               "smart-space": "on",
               "smart-command": "on",
             })}
+          </div>
+
+          <div className="math-display-mode-toggle">
+            <label>
+              <input
+                type="checkbox"
+                checked={displayMode}
+                onChange={(e) => setDisplayMode(e.target.checked)}
+              />
+              Display as centered block (still allows text before/after)
+            </label>
+            <span className="math-dialog-hint">Tip: Ctrl/Cmd + Enter to insert</span>
           </div>
 
           <div className="math-dialog-footer">

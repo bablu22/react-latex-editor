@@ -1,12 +1,16 @@
 import { Extension } from "@tiptap/core";
-import { InputRule } from "@tiptap/react";
+import { InputRule } from "@tiptap/core";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     inlineMath: {
-      insertInlineMath: (latex: string) => ReturnType;
+      insertInlineMath: (latex: string, displayMode?: boolean) => ReturnType;
     };
   }
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[-\/\\^$*+?.()|\[\]{}]/g, "\\$&");
 }
 
 const InlineMath = Extension.create({
@@ -19,64 +23,61 @@ const InlineMath = Extension.create({
     };
   },
 
-  addProseMirrorPlugins() {
-    return [];
-  },
-
   addCommands() {
     return {
       insertInlineMath:
-        (latex: string) =>
+        (latex: string, displayMode = false) =>
         ({ commands }) => {
-          return commands.insertContent({ type: "math", attrs: { latex } });
+          return commands.insertContent({
+            type: "math",
+            attrs: { latex, displayMode },
+          });
         },
     };
   },
 
   addInputRules() {
-    const inlineDelimiterEscaped = this.options.inlineDelimiter.replace(
-      /[-\/\\^$*+?.()|\[\]{}]/g,
-      "\\$&",
-    );
-    const blockDelimiterEscaped = this.options.blockDelimiter.replace(
-      /[-\/\\^$*+?.()|\[\]{}]/g,
-      "\\$&",
-    );
+    const inlineDelimiter = escapeRegExp(this.options.inlineDelimiter);
+    const blockDelimiter = escapeRegExp(this.options.blockDelimiter);
 
     return [
-      // Inline math: $latex$
+      // Block math first: $$latex$$ (must precede single-dollar rule)
       new InputRule({
-        find: new RegExp(
-          `${inlineDelimiterEscaped}(.*?)${inlineDelimiterEscaped}$`,
-        ),
+        find: new RegExp(`${blockDelimiter}([^$]+)${blockDelimiter}$`),
         handler: ({ state, range, match }) => {
-          const [, latexContent] = match;
+          const latexContent = match[1]?.trim();
+          if (!latexContent) return;
+
           const { from, to } = range;
+          const mathNode = state.schema.nodes.math;
+          if (!mathNode) return;
 
           state.tr.replaceWith(
             from,
             to,
-            state.schema.nodes.math.create({ latex: latexContent }),
+            mathNode.create({
+              latex: latexContent,
+              displayMode: true,
+            }),
           );
         },
       }),
 
-      // Block math: $$latex$$
+      // Inline math: $latex$ (reject empty / nested dollars)
       new InputRule({
-        find: new RegExp(
-          `${blockDelimiterEscaped}(.*?)${blockDelimiterEscaped}$`,
-        ),
+        find: new RegExp(`(?<!\\$)${inlineDelimiter}([^$\\n]+)${inlineDelimiter}(?!\\$)$`),
         handler: ({ state, range, match }) => {
-          const [, latexContent] = match;
+          const latexContent = match[1]?.trim();
+          if (!latexContent) return;
+
           const { from, to } = range;
+          const mathNode = state.schema.nodes.math;
+          if (!mathNode) return;
 
           state.tr.replaceWith(
             from,
             to,
-            state.schema.nodes.math.create({
-              latex: latexContent,
-              displayMode: true,
-            }),
+            mathNode.create({ latex: latexContent, displayMode: false }),
           );
         },
       }),

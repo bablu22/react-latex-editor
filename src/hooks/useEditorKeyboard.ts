@@ -1,61 +1,52 @@
 import { useEffect } from "react";
+import type { Editor } from "@tiptap/react";
 
 export interface UseEditorKeyboardOptions {
   onMathDialogOpen?: () => void;
 }
 
+/**
+ * Registers editor-scoped shortcuts that TipTap does not already provide.
+ * Bold/italic/underline are handled by TipTap extensions — do not duplicate them.
+ */
 export function useEditorKeyboard(
-  editor: any,
+  editor: Editor | null,
   options?: UseEditorKeyboardOptions,
 ) {
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!editor) return;
+    if (!editor) return;
 
-      // Bold: Ctrl/Cmd + B
-      if ((e.ctrlKey || e.metaKey) && e.key === "b") {
-        e.preventDefault();
-        editor.chain().focus().toggleBold().run();
-      }
-      // Italic: Ctrl/Cmd + I
-      if ((e.ctrlKey || e.metaKey) && e.key === "i") {
-        e.preventDefault();
-        editor.chain().focus().toggleItalic().run();
-      }
-      // Underline: Ctrl/Cmd + U
-      if ((e.ctrlKey || e.metaKey) && e.key === "u") {
-        e.preventDefault();
-        editor.chain().focus().toggleUnderline().run();
-      }
-      // Code Block: Ctrl/Cmd + Shift + C
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "c") {
-        e.preventDefault();
-        editor.chain().focus().toggleCodeBlock().run();
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!editor.isFocused && !editor.view.hasFocus()) return;
+
+      const mod = e.ctrlKey || e.metaKey;
+
       // Link: Ctrl/Cmd + K
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      if (mod && e.key.toLowerCase() === "k") {
         e.preventDefault();
         const previousUrl = editor.getAttributes("link").href || "";
         const url = window.prompt("Enter URL:", previousUrl);
-        if (url === null) return; // Cancelled
+        if (url === null) return;
         if (url === "") {
           editor.chain().focus().extendMarkRange("link").unsetLink().run();
           return;
         }
-        editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+        const href = /^(https?:|mailto:|tel:|\/|#)/i.test(url)
+          ? url
+          : `https://${url}`;
+        editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+        return;
       }
+
       // Math Equation: Ctrl/Cmd + M
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.key === "m" &&
-        options?.onMathDialogOpen
-      ) {
+      if (mod && e.key.toLowerCase() === "m" && options?.onMathDialogOpen) {
         e.preventDefault();
         options.onMathDialogOpen();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [editor, options]);
+    const dom = editor.view.dom;
+    dom.addEventListener("keydown", handleKeyDown);
+    return () => dom.removeEventListener("keydown", handleKeyDown);
+  }, [editor, options?.onMathDialogOpen]);
 }

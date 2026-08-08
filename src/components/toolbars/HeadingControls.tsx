@@ -1,52 +1,51 @@
 import { HEADING_LEVELS } from "../../constants/editorConstants";
-import ToolbarButton from "./ToolbarButton";
+import type { Editor } from "@tiptap/react";
+import type { Level } from "@tiptap/extension-heading";
 
 interface HeadingControlsProps {
-  /**
-   * The Tiptap editor instance
-   */
-  editor: any;
-  /**
-   * Whether the editor is in read-only mode
-   */
+  editor: Editor | null;
   readOnly?: boolean;
 }
 
+function getCurrentHeading(editor: Editor | null): string {
+  if (!editor) return "paragraph";
+  for (const level of HEADING_LEVELS) {
+    if (editor.isActive("heading", { level })) return String(level);
+  }
+  return "paragraph";
+}
+
 const HeadingControls = ({ editor, readOnly }: HeadingControlsProps) => {
+  const value = getCurrentHeading(editor);
+
   return (
-    <div className="toolbar-group" role="group" aria-label="Headings">
-      {HEADING_LEVELS.map((level) => (
-        <ToolbarButton
-          key={level}
-          onClick={() => editor?.chain().focus().toggleHeading({ level }).run()}
-          isActive={editor?.isActive("heading", { level })}
-          title={`Heading ${level}`}
-          disabled={!editor || readOnly}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={24}
-            height={24}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="icon icon-tabler icons-tabler-outline icon-tabler-heading"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M7 12h10" />
-            <path d="M7 5v14" />
-            <path d="M17 5v14" />
-            <path d="M15 19h4" />
-            <path d="M15 5h4" />
-            <path d="M5 19h4" />
-            <path d="M5 5h4" />
-          </svg>
-          {level}
-        </ToolbarButton>
-      ))}
+    <div className="toolbar-group" role="group" aria-label="Block style">
+      <select
+        className="toolbar-select toolbar-select-heading"
+        aria-label="Text style"
+        disabled={!editor || readOnly}
+        value={value}
+        onChange={(e) => {
+          if (!editor) return;
+          const next = e.target.value;
+          if (next === "paragraph") {
+            editor.chain().focus().setParagraph().run();
+            return;
+          }
+          editor
+            .chain()
+            .focus()
+            .toggleHeading({ level: Number(next) as Level })
+            .run();
+        }}
+      >
+        <option value="paragraph">Paragraph</option>
+        {HEADING_LEVELS.map((level) => (
+          <option key={level} value={level}>
+            Heading {level}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

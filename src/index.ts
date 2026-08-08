@@ -2,6 +2,7 @@
 export { Editor } from "./components/Editor";
 export { default as Viewer } from "./components/Viewer";
 export { default as ErrorBoundary } from "./components/ErrorBoundary";
+export { default as ImagePickerDialog } from "./components/ImagePickerDialog";
 
 // Export types
 export type { EditorProps, EditorRef } from "./components/Editor";
@@ -11,6 +12,8 @@ export type {
   EditorTheme,
   MathEquation,
   ImageConfig,
+  ImageInsertItem,
+  ImageInsertInput,
   EditorState,
   EditorEventHandlers,
   ExportOptions,
@@ -18,8 +21,20 @@ export type {
 } from "./types/editor";
 
 // Export utilities
-export { addImage, getEditorProps, insertMath } from "./utils";
-export { getEditorExtensions } from "./utils/editorConfig";
+export {
+  addImage,
+  addImagesFromFiles,
+  getEditorProps,
+  insertMath,
+  insertSvg,
+  normalizeUrl,
+} from "./utils";
+export { getEditorContentStats } from "./utils/contentStats";
+export type { EditorContentStats } from "./utils/contentStats";
+export {
+  getEditorExtensions,
+  type EditorExtensionOptions,
+} from "./utils/editorConfig";
 export { ensureMathLiveLoaded } from "./types/mathlive";
 export {
   validateLatex,
@@ -34,6 +49,17 @@ export {
   isContentEmpty,
   generateId,
 } from "./utils/helpers";
+export {
+  IMAGE_ACCEPT,
+  SVG_ACCEPT,
+  isSupportedImageFile,
+  isSvgFile,
+  isSvgSource,
+  isLikelySvgMarkup,
+  fileToDataUrl,
+  svgMarkupToDataUrl,
+  filesToImageSources,
+} from "./utils/media";
 
 // Export hooks
 export { useEditorKeyboard } from "./hooks/useEditorKeyboard";
@@ -44,6 +70,7 @@ export {
   useEditorHistory,
 } from "./hooks/useEditorState";
 export { useResponsive } from "./hooks/useResponsive";
+export { useEditorForceUpdate } from "./hooks/useEditorForceUpdate";
 
 // Export extensions (for advanced users who want to customize)
 export { default as MathNode } from "./extensions/MathNode";

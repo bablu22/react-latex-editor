@@ -5,6 +5,8 @@ import {
   setFontFamily,
   insertTable,
   addImage,
+  insertSvg,
+  addImagesFromFiles,
   insertMath,
   validateAndInsertImage,
 } from "./editorUtils";
@@ -16,6 +18,11 @@ export {
   setFontFamily,
   insertTable,
   addImage,
+  insertSvg,
+  addImagesFromFiles,
   insertMath,
   validateAndInsertImage,
 };
+
+export { normalizeUrl } from "./helpers";
+

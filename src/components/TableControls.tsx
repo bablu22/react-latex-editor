@@ -1,32 +1,25 @@
+import type { Editor } from "@tiptap/react";
+import { useEditorForceUpdate } from "../hooks/useEditorForceUpdate";
+
 interface TableControlsProps {
-  /**
-   * The Tiptap editor instance
-   */
-  editor: any;
-  /**
-   * Whether the editor is in read-only mode
-   */
+  editor: Editor | null;
   readOnly?: boolean;
 }
 
 const TableControls = ({ editor, readOnly }: TableControlsProps) => {
+  useEditorForceUpdate(editor);
+
   if (!editor?.isActive("table")) return null;
 
-  const tableCommands = {
-    addColumnBefore: () => editor?.chain().focus().addColumnBefore().run(),
-    addColumnAfter: () => editor?.chain().focus().addColumnAfter().run(),
-    deleteColumn: () => editor?.chain().focus().deleteColumn().run(),
-    addRowBefore: () => editor?.chain().focus().addRowBefore().run(),
-    addRowAfter: () => editor?.chain().focus().addRowAfter().run(),
-    deleteRow: () => editor?.chain().focus().deleteRow().run(),
-    deleteTable: () => editor?.chain().focus().deleteTable().run(),
+  const run = (command: () => boolean) => {
+    if (!readOnly) command();
   };
 
   return (
-    <div className="table-controls">
+    <div className="table-controls" role="toolbar" aria-label="Table controls">
       <div className="table-controls-group">
         <button
-          onClick={tableCommands.addColumnBefore}
+          onClick={() => run(() => editor.chain().focus().addColumnBefore().run())}
           title="Add column before"
           disabled={readOnly}
           type="button"
@@ -34,7 +27,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           ←+
         </button>
         <button
-          onClick={tableCommands.addColumnAfter}
+          onClick={() => run(() => editor.chain().focus().addColumnAfter().run())}
           title="Add column after"
           disabled={readOnly}
           type="button"
@@ -42,17 +35,17 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           +→
         </button>
         <button
-          onClick={tableCommands.deleteColumn}
+          onClick={() => run(() => editor.chain().focus().deleteColumn().run())}
           title="Delete column"
           disabled={readOnly}
           type="button"
         >
-          -
+          − Col
         </button>
       </div>
       <div className="table-controls-group">
         <button
-          onClick={tableCommands.addRowBefore}
+          onClick={() => run(() => editor.chain().focus().addRowBefore().run())}
           title="Add row before"
           disabled={readOnly}
           type="button"
@@ -60,7 +53,7 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           ↑+
         </button>
         <button
-          onClick={tableCommands.addRowAfter}
+          onClick={() => run(() => editor.chain().focus().addRowAfter().run())}
           title="Add row after"
           disabled={readOnly}
           type="button"
@@ -68,22 +61,22 @@ const TableControls = ({ editor, readOnly }: TableControlsProps) => {
           +↓
         </button>
         <button
-          onClick={tableCommands.deleteRow}
+          onClick={() => run(() => editor.chain().focus().deleteRow().run())}
           title="Delete row"
           disabled={readOnly}
           type="button"
         >
-          -
+          − Row
         </button>
       </div>
       <button
-        onClick={tableCommands.deleteTable}
+        onClick={() => run(() => editor.chain().focus().deleteTable().run())}
         title="Delete table"
         disabled={readOnly}
         className="delete-table-button"
         type="button"
       >
-        ×
+        Delete table
       </button>
     </div>
   );

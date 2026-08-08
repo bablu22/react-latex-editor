@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   useCallback,
+  useMemo,
 } from "react";
 
 import "../styles/viewer.css";
@@ -27,6 +28,7 @@ declare global {
         pageReady?: () => Promise<void>;
         defaultPageReady: () => Promise<void>;
       };
+      typesetClear?: (elements?: Element[]) => void;
       typesetPromise?: (elements: Element[]) => Promise<void>;
     };
   }
@@ -44,176 +46,207 @@ interface ViewerProps {
   };
 }
 
-export const Viewer = ({
-  content,
-  className = "",
-  contentClassName = "",
-  enableMath = true,
-  mathJaxConfig = {},
-}: ViewerProps) => {
-  const viewerRef = useRef<HTMLDivElement>(null);
-  const [mathJaxLoaded, setMathJaxLoaded] = useState(false);
-  const [mathJaxError, setMathJaxError] = useState<string | null>(null);
-  const [contentKey, setContentKey] = useState(0);
-  const lastContentRef = useRef<string>("");
-  const isProcessingRef = useRef(false);
+const MATHJAX_CDN = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js";
+const MATHJAX_SCRIPT_ID = "react-latex-editor-mathjax";
 
-  // Initialize MathJax
-  useEffect(() => {
-    if (!enableMath) {
-      setMathJaxLoaded(true);
-      return;
-    }
+function ensureMathJax(
+  config: ViewerProps["mathJaxConfig"],
+): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
 
+  if (window.MathJax?.typesetPromise) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
     if (!window.MathJax) {
       window.MathJax = {
         tex: {
-          inlineMath: mathJaxConfig.inlineMath || [
+          inlineMath: config?.inlineMath || [
             ["$", "$"],
             ["\\(", "\\)"],
           ],
-          displayMath: mathJaxConfig.displayMath || [
+          displayMath: config?.displayMath || [
             ["$$", "$$"],
             ["\\[", "\\]"],
           ],
           processEscapes: true,
           processEnvironments: true,
-          packages: mathJaxConfig.packages || [
-            "base",
-            "ams",
-            "noerrors",
-            "noundefined",
-          ],
+          packages: config?.packages || ["base", "ams", "noerrors", "noundefined"],
         },
         options: {
-          skipHtmlTags: ["script", "noscript", "style", "textarea", "pre"],
+          skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"],
           ignoreHtmlClass: "tex2jax_ignore",
           processHtmlClass: "tex2jax_process",
         },
         startup: {
           defaultPageReady: () => Promise.resolve(),
-          pageReady: () => {
-            return (
-              window.MathJax?.startup.defaultPageReady().then(() => {
-                setMathJaxLoaded(true);
-              }) || Promise.resolve()
-            );
-          },
         },
       };
-
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js";
-      script.async = true;
-      script.onload = () => {
-        const checkMathJax = setInterval(() => {
-          if (
-            window.MathJax &&
-            typeof window.MathJax.typesetPromise === "function"
-          ) {
-            clearInterval(checkMathJax);
-            setMathJaxLoaded(true);
-          }
-        }, 100);
-
-        setTimeout(() => {
-          clearInterval(checkMathJax);
-          if (!window.MathJax?.typesetPromise) {
-            setMathJaxError("MathJax failed to load");
-          }
-        }, 5000);
-      };
-
-      script.onerror = () => {
-        setMathJaxError("Failed to load MathJax script");
-      };
-
-      document.head.appendChild(script);
-    } else {
-      setMathJaxLoaded(true);
     }
-  }, [enableMath, mathJaxConfig]);
 
-  // Update content key when content changes
+    const existing = document.getElementById(MATHJAX_SCRIPT_ID);
+    if (existing) {
+      const check = setInterval(() => {
+        if (window.MathJax?.typesetPromise) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 50);
+      setTimeout(() => {
+        clearInterval(check);
+        if (!window.MathJax?.typesetPromise) {
+          reject(new Error("MathJax failed to load"));
+        }
+      }, 8000);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = MATHJAX_SCRIPT_ID;
+    script.src = MATHJAX_CDN;
+    script.async = true;
+    script.onload = () => {
+      const check = setInterval(() => {
+        if (window.MathJax?.typesetPromise) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 50);
+      setTimeout(() => {
+        clearInterval(check);
+        if (!window.MathJax?.typesetPromise) {
+          reject(new Error("MathJax failed to initialize"));
+        }
+      }, 8000);
+    };
+    script.onerror = () => reject(new Error("Failed to load MathJax script"));
+    document.head.appendChild(script);
+  });
+}
+
+export const Viewer = ({
+  content,
+  className = "",
+  contentClassName = "",
+  enableMath = true,
+  mathJaxConfig,
+}: ViewerProps) => {
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const [mathJaxReady, setMathJaxReady] = useState(!enableMath);
+  const [mathJaxError, setMathJaxError] = useState<string | null>(null);
+  const isProcessingRef = useRef(false);
+  const requestIdRef = useRef(0);
+
+  const configKey = useMemo(
+    () => JSON.stringify(mathJaxConfig ?? {}),
+    [mathJaxConfig],
+  );
+
   useEffect(() => {
-    if (content !== lastContentRef.current) {
-      lastContentRef.current = content;
-      setContentKey((prev) => prev + 1);
+    if (!enableMath) {
+      setMathJaxReady(true);
+      return;
     }
-  }, [content]);
 
-  // Process content synchronously after DOM updates
+    let cancelled = false;
+    ensureMathJax(mathJaxConfig)
+      .then(() => {
+        if (!cancelled) {
+          setMathJaxReady(true);
+          setMathJaxError(null);
+        }
+      })
+      .catch((err: Error) => {
+        if (!cancelled) {
+          setMathJaxError(err.message);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- configKey captures mathJaxConfig
+  }, [enableMath, configKey]);
+
   useLayoutEffect(() => {
-    if (!enableMath || !mathJaxLoaded || !viewerRef.current || !content) {
+    const contentEl = viewerRef.current?.querySelector(".viewer-content");
+    if (!contentEl) return;
+
+    const requestId = ++requestIdRef.current;
+
+    if (!enableMath || !mathJaxReady) {
+      contentEl.innerHTML = content || "";
       return;
     }
 
     if (isProcessingRef.current) {
-      return;
+      contentEl.innerHTML = content || "";
     }
 
     const processContent = async () => {
       isProcessingRef.current = true;
 
       try {
-        const viewerContentElement =
-          viewerRef.current?.querySelector(".viewer-content");
-        if (!viewerContentElement) {
-          return;
+        if (window.MathJax?.typesetClear) {
+          window.MathJax.typesetClear([contentEl]);
         }
 
-        // Set the HTML content
-        viewerContentElement.innerHTML = content;
+        contentEl.innerHTML = content || "";
 
-        // Process math elements
-        const mathElements =
-          viewerContentElement.querySelectorAll("[data-latex]");
-
+        const mathElements = contentEl.querySelectorAll("[data-latex]");
         mathElements.forEach((element: Element) => {
           const latex = element.getAttribute("data-latex");
-          const dataType = element.getAttribute("data-type");
-
           if (!latex) return;
 
-          let newTextContent = "";
+          const displayMode =
+            element.getAttribute("data-display-mode") === "true" ||
+            element.hasAttribute("data-display-mode") ||
+            element.classList.contains("math-node-wrapper-block");
 
-          if (dataType === "math") {
-            newTextContent = `$${latex}$`;
+          if (displayMode) {
+            const block = document.createElement("div");
+            block.className = "viewer-math-block";
+            block.textContent = `\\[${latex}\\]`;
+            element.replaceWith(block);
           } else {
-            newTextContent = `$$${latex}$$`;
+            const inline = document.createElement("span");
+            inline.className = "viewer-math-inline";
+            inline.textContent = `\\(${latex}\\)`;
+            element.replaceWith(inline);
           }
-
-          element.textContent = newTextContent;
         });
 
-        // Typeset with MathJax
         if (
           window.MathJax &&
-          typeof window.MathJax.typesetPromise === "function"
+          typeof window.MathJax.typesetPromise === "function" &&
+          requestId === requestIdRef.current
         ) {
-          await window.MathJax.typesetPromise([viewerContentElement]);
+          await window.MathJax.typesetPromise([contentEl]);
         }
       } catch (err) {
         console.error("MathJax processing error:", err);
-        setMathJaxError(`Failed to render mathematical equations: ${err}`);
+        if (requestId === requestIdRef.current) {
+          setMathJaxError(`Failed to render mathematical equations: ${err}`);
+        }
       } finally {
         isProcessingRef.current = false;
       }
     };
 
-    processContent();
-  }, [contentKey, mathJaxLoaded, enableMath]);
+    void processContent();
+  }, [content, mathJaxReady, enableMath]);
 
   const handleMathError = useCallback(() => {
     setMathJaxError(null);
   }, []);
 
   return (
-    <div className={`editor-viewer ${className}`} ref={viewerRef}>
-      {/* Use key to force re-render when content changes */}
+    <div className={`editor-viewer ${className}`.trim()} ref={viewerRef}>
       <div
-        key={contentKey}
-        className={`viewer-content prose ${contentClassName}`}
+        className={`viewer-content prose ${contentClassName}`.trim()}
       />
 
       {mathJaxError && (

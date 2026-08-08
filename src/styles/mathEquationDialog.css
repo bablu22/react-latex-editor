@@ -206,6 +206,28 @@
   outline: none !important;
 }
 
+.math-display-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px 8px;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.math-display-mode-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.math-dialog-hint {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
 .math-dialog-footer {
   padding: 8px 12px;
   display: flex;

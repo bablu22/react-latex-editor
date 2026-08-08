@@ -9,6 +9,10 @@ export const ImageGroup = Node.create({
     return {
       align: {
         default: "left",
+        parseHTML: (element) => element.getAttribute("data-align") || "left",
+        renderHTML: (attributes) => ({
+          "data-align": attributes.align || "left",
+        }),
       },
     };
   },
@@ -26,7 +30,9 @@ export const ImageGroup = Node.create({
       "div",
       mergeAttributes(HTMLAttributes, {
         "data-type": "image-group",
-        style: `justify-content: ${alignValue}`,
+        "data-align": align,
+        class: "image-group",
+        style: `display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: ${alignValue}`,
       }),
       0,
     ];
@@ -37,10 +43,15 @@ export const ImageGroup = Node.create({
       {
         tag: 'div[data-type="image-group"]',
         getAttrs: (dom) => {
-          const align = dom.style.justifyContent;
-          if (align === "center" || align === "flex-end") {
-            return { align: align === "center" ? "center" : "right" };
+          if (typeof dom === "string") return false;
+          const el = dom as HTMLElement;
+          const dataAlign = el.getAttribute("data-align");
+          if (dataAlign === "center" || dataAlign === "right" || dataAlign === "left") {
+            return { align: dataAlign };
           }
+          const justify = el.style.justifyContent;
+          if (justify === "center") return { align: "center" };
+          if (justify === "flex-end" || justify === "right") return { align: "right" };
           return { align: "left" };
         },
       },

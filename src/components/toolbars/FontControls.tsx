@@ -1,60 +1,51 @@
-import { setBackgroundColor } from "../../utils";
+import { setFontFamily, setFontSize } from "../../utils";
+import { FONT_FAMILIES, FONT_SIZES } from "../../constants/editorConstants";
+import type { Editor } from "@tiptap/react";
 
 export interface FontControlsProps {
-  /**
-   * The Tiptap editor instance
-   */
-  editor: any;
-  /**
-   * Whether the editor is in read-only mode
-   */
+  editor: Editor | null;
   readOnly?: boolean;
 }
 
 const FontControls = ({ editor, readOnly }: FontControlsProps) => {
-  return (
-    <div className="toolbar-group" role="group" aria-label="Color controls">
-      {/* Text Color */}
-      <div className="tooltip-container" style={{ position: "relative" }}>
-        <input
-          type="color"
-          aria-label="Text Color"
-          disabled={!editor || readOnly}
-          onChange={(e) =>
-            editor?.chain().focus().setColor(e.target.value).run()
-          }
-          style={{
-            width: 36,
-            height: 36,
-            border: "2px solid rgba(226, 232, 240, 0.8)",
-            borderRadius: "0.375rem",
-            background: "none",
-            cursor: "pointer",
-            marginRight: 4,
-          }}
-        />
-        <div className="tooltip">Text Color</div>
-      </div>
+  const currentFontSize =
+    editor?.getAttributes("customTextStyle")?.fontSize || "";
+  const currentFontFamily =
+    editor?.getAttributes("customTextStyle")?.fontFamily || "";
 
-      {/* Background Color */}
-      <div className="tooltip-container" style={{ position: "relative" }}>
-        <input
-          type="color"
-          aria-label="Background Color"
-          disabled={!editor || readOnly}
-          onChange={(e) => setBackgroundColor(editor, e.target.value)}
-          style={{
-            width: 36,
-            height: 36,
-            border: "2px solid rgba(226, 232, 240, 0.8)",
-            borderRadius: "0.375rem",
-            background: "none",
-            cursor: "pointer",
-            marginRight: 4,
-          }}
-        />
-        <div className="tooltip">Background Color</div>
-      </div>
+  return (
+    <div className="toolbar-group toolbar-font-controls" role="group" aria-label="Font">
+      <select
+        className="toolbar-select toolbar-select-font"
+        aria-label="Font family"
+        disabled={!editor || readOnly}
+        value={currentFontFamily}
+        onChange={(e) => setFontFamily(editor, e.target.value)}
+      >
+        {FONT_FAMILIES.map((font) => (
+          <option key={font.name} value={font.value}>
+            {font.name}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className="toolbar-select toolbar-select-size"
+        aria-label="Font size"
+        disabled={!editor || readOnly}
+        value={currentFontSize}
+        onChange={(e) => {
+          if (e.target.value) setFontSize(editor, e.target.value);
+          else editor?.chain().focus().unsetMark("customTextStyle").run();
+        }}
+      >
+        <option value="">Size</option>
+        {FONT_SIZES.map((size) => (
+          <option key={size} value={size}>
+            {size.replace("px", "")}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

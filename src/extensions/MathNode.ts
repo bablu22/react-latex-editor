@@ -7,28 +7,26 @@ const MathNode = Node.create({
   group: "inline",
   inline: true,
   atom: true,
+  selectable: true,
+  draggable: true,
 
   addAttributes() {
     return {
       latex: {
         default: "",
-        parseHTML: (element) => element.getAttribute("data-latex"),
-        renderHTML: (attributes) => {
-          return {
-            "data-latex": attributes.latex,
-          };
-        },
+        parseHTML: (element) => element.getAttribute("data-latex") || "",
+        renderHTML: (attributes) => ({
+          "data-latex": attributes.latex || "",
+        }),
       },
       displayMode: {
         default: false,
-        parseHTML: (element) => element.hasAttribute("data-display-mode"),
+        parseHTML: (element) =>
+          element.hasAttribute("data-display-mode") &&
+          element.getAttribute("data-display-mode") !== "false",
         renderHTML: (attributes) => {
-          if (attributes.displayMode) {
-            return {
-              "data-display-mode": "",
-            };
-          }
-          return {};
+          if (!attributes.displayMode) return {};
+          return { "data-display-mode": "true" };
         },
       },
     };
@@ -36,26 +34,34 @@ const MathNode = Node.create({
 
   parseHTML() {
     return [
-      {
-        tag: 'span[data-type="math"]',
-      },
+      { tag: 'span[data-type="math"]' },
+      { tag: 'div[data-type="math"]' },
     ];
   },
 
   renderHTML({ HTMLAttributes, node }) {
+    const displayMode = Boolean(node?.attrs?.displayMode);
+    const latex = node?.attrs?.latex || "";
+
+    // Always emit <span> so HTML stays valid inside paragraphs and text
+    // can sit before/after the equation.
     return [
       "span",
       {
         ...HTMLAttributes,
         "data-type": "math",
-        "data-latex": node?.attrs?.latex || "",
+        "data-latex": latex,
+        ...(displayMode ? { "data-display-mode": "true" } : {}),
+        class: displayMode
+          ? "math-node-wrapper math-node-wrapper-block"
+          : "math-node-wrapper math-node-wrapper-inline",
       },
-      node?.attrs?.latex || "",
+      latex,
     ];
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(MathNodeView as any);
+    return ReactNodeViewRenderer(MathNodeView as never);
   },
 });
 

@@ -27,6 +27,25 @@ export interface MathEquation {
 }
 
 /**
+ * Image / SVG insert payload for the editor
+ */
+export interface ImageInsertItem {
+  src: string;
+  alt?: string;
+  width?: string;
+  height?: string;
+  /** Mark as SVG figure (auto-detected from src when omitted) */
+  mediaType?: "image" | "svg";
+  align?: "left" | "center" | "right";
+}
+
+export type ImageInsertInput =
+  | string
+  | string[]
+  | ImageInsertItem
+  | ImageInsertItem[];
+
+/**
  * Image configuration
  */
 export interface ImageConfig {
@@ -35,6 +54,7 @@ export interface ImageConfig {
   width?: string;
   height?: string;
   align?: "left" | "center" | "right";
+  mediaType?: "image" | "svg";
 }
 
 /**

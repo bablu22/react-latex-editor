@@ -3,23 +3,23 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { MathfieldElement } from "../types/mathlive";
 import { Node } from "@tiptap/pm/model";
 
-// Define the math node attributes interface
 interface MathNodeAttrs {
   latex: string;
   displayMode: boolean;
 }
 
-// Define the props interface for MathNodeView
 interface MathNodeViewProps {
   node: Node & {
     attrs: MathNodeAttrs;
   };
   updateAttributes: (attrs: Partial<MathNodeAttrs>) => void;
+  selected?: boolean;
 }
 
 class MathNodeView extends Component<MathNodeViewProps> {
   private mathFieldRef: React.RefObject<MathfieldElement | null>;
   private cleanup?: () => void;
+  private mounted = false;
 
   constructor(props: MathNodeViewProps) {
     super(props);
@@ -27,21 +27,22 @@ class MathNodeView extends Component<MathNodeViewProps> {
   }
 
   async componentDidMount() {
-    // Dynamically import mathlive and register the custom element if needed
-    if (typeof window !== "undefined") {
-      try {
-        const mathlive = await import("mathlive");
-        if (!customElements.get("math-field")) {
-          customElements.define("math-field", mathlive.MathfieldElement);
-        }
-        // Optionally configure fontsDirectory if needed
-        if (mathlive.MathfieldElement) {
-          mathlive.MathfieldElement.fontsDirectory = null;
-        }
-        this.setupMathField();
-      } catch (error) {
-        console.error("Failed to load MathLive:", error);
+    this.mounted = true;
+    if (typeof window === "undefined") return;
+
+    try {
+      const mathlive = await import("mathlive");
+      if (!customElements.get("math-field")) {
+        customElements.define("math-field", mathlive.MathfieldElement);
       }
+      if (mathlive.MathfieldElement) {
+        mathlive.MathfieldElement.fontsDirectory = null;
+      }
+      if (this.mounted) {
+        this.setupMathField();
+      }
+    } catch (error) {
+      console.error("Failed to load MathLive:", error);
     }
   }
 
@@ -52,6 +53,7 @@ class MathNodeView extends Component<MathNodeViewProps> {
   }
 
   componentWillUnmount() {
+    this.mounted = false;
     this.cleanupMathField();
   }
 
@@ -59,67 +61,67 @@ class MathNodeView extends Component<MathNodeViewProps> {
     const mathField = this.mathFieldRef.current;
     if (!mathField) return;
 
-    const handleInput = () => {
+    const applyValue = () => {
+      if (!mathField.isConnected) return;
       try {
-        const newLatex = mathField.value;
-        if (newLatex !== this.props.node.attrs.latex) {
-          this.props.updateAttributes({ latex: newLatex });
-        }
+        mathField.value = this.props.node.attrs.latex || "";
+        mathField.readOnly = true;
       } catch (error) {
-        console.error("Error updating math field:", error);
+        console.error("Error setting up math field:", error);
       }
     };
 
-    // Wait for the next tick to ensure the field is mounted
-    setTimeout(() => {
-      if (mathField && mathField.isConnected) {
-        try {
-          mathField.addEventListener("input", handleInput);
-          mathField.value = this.props.node.attrs.latex || "";
-        } catch (error) {
-          console.error("Error setting up math field:", error);
-        }
-      }
-    }, 0);
+    requestAnimationFrame(applyValue);
 
     this.cleanup = () => {
-      if (mathField && mathField.isConnected) {
-        try {
-          mathField.removeEventListener("input", handleInput);
+      try {
+        if (mathField.isConnected) {
           mathField.menuItems = [];
-        } catch (error) {
-          console.error("Error cleaning up math field:", error);
         }
+      } catch {
+        // ignore cleanup errors on unmount
       }
     };
   }
 
   updateMathField() {
-    if (this.mathFieldRef.current) {
-      this.mathFieldRef.current.value = this.props.node.attrs.latex || "";
+    const mathField = this.mathFieldRef.current;
+    if (!mathField || !mathField.isConnected) return;
+
+    try {
+      if (mathField.value !== (this.props.node.attrs.latex || "")) {
+        mathField.value = this.props.node.attrs.latex || "";
+      }
+    } catch (error) {
+      console.error("Error updating math field:", error);
     }
   }
 
   cleanupMathField() {
-    if (this.cleanup) {
-      this.cleanup();
-    }
+    this.cleanup?.();
   }
 
   render() {
-    const { node } = this.props;
-    const { displayMode } = node.attrs;
+    const { node, selected } = this.props;
+    const { displayMode, latex } = node.attrs;
 
+    // Must stay a <span>: math is an inline atom. Using <div> splits the
+    // paragraph and blocks typing text before/after the equation.
     return (
       <NodeViewWrapper
-        className={
+        as="span"
+        className={`math-node-wrapper ${
           displayMode ? "math-node-wrapper-block" : "math-node-wrapper-inline"
-        }
+        } ${selected ? "is-selected" : ""}`}
+        data-latex={latex}
+        data-display-mode={displayMode ? "true" : undefined}
+        data-drag-handle=""
       >
         {React.createElement("math-field", {
           ref: this.mathFieldRef,
-          className: "test-math-background",
-          readonly: true,
+          className: "math-field-display",
+          readOnly: true,
+          contentEditable: false,
         })}
       </NodeViewWrapper>
     );

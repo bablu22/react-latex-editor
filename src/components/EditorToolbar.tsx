@@ -1,68 +1,57 @@
 import AlignmentControls from "./toolbars/AlignmentControls";
 import BlockControls from "./toolbars/BlockControls";
+import ColorControls from "./toolbars/ColorControls";
+import FontControls from "./toolbars/FontControls";
 import HeadingControls from "./toolbars/HeadingControls";
+import HistoryControls from "./toolbars/HistoryControls";
 import ImageAlignmentControls from "./toolbars/ImageAlignmentControls";
 import ImageGroupAlignmentControls from "./toolbars/ImageGroupAlignmentControls";
 import ListControls from "./toolbars/ListControls";
 import SpecialFeaturesControls from "./toolbars/SpecialFeaturesControls";
 import TextFormattingControls from "./toolbars/TextFormattingControls";
 import YouTubeControls from "./toolbars/YouTubeControls";
+import ToolbarDivider from "./toolbars/ToolbarDivider";
+import { useEditorForceUpdate } from "../hooks/useEditorForceUpdate";
+import type { Editor } from "@tiptap/react";
 
 export interface EditorToolbarProps {
-  /**
-   * The Tiptap editor instance
-   */
-  editor: any;
-  /**
-   * Whether the editor is in read-only mode
-   */
+  editor: Editor | null;
   readOnly?: boolean;
-  /**
-   * Callback function to open the math dialog
-   *  */
   onMathDialogOpen?: () => void;
-  /**
-   * Callback function for image selection
-   */
   onImagePicker?: () => void;
 }
 
 const EditorToolbar = (props: EditorToolbarProps) => {
   const { editor, readOnly, onMathDialogOpen, onImagePicker } = props;
 
+  useEditorForceUpdate(editor);
+
   return (
-    <div className={`toolbar`} role="toolbar" aria-label="Editor toolbar">
-      {/* Main Toolbar Content */}
-      <div className="toolbar-content">
+    <div className="toolbar" role="toolbar" aria-label="Editor toolbar">
+      <div className="toolbar-row">
+        <HistoryControls editor={editor} readOnly={readOnly} />
+        <ToolbarDivider />
         <TextFormattingControls editor={editor} readOnly={readOnly} />
-        <div className="toolbar-divider"></div>
-
+        <ToolbarDivider />
+        <ColorControls editor={editor} readOnly={readOnly} />
+        <ToolbarDivider />
+        <FontControls editor={editor} readOnly={readOnly} />
         <HeadingControls editor={editor} readOnly={readOnly} />
-        <div className="toolbar-divider"></div>
-
-        <ListControls editor={editor} readOnly={readOnly} />
-        <div className="toolbar-divider"></div>
-
+        <ToolbarDivider />
         <AlignmentControls editor={editor} readOnly={readOnly} />
-        <div className="toolbar-divider"></div>
-
+        <ListControls editor={editor} readOnly={readOnly} />
+        <ToolbarDivider />
         <BlockControls editor={editor} readOnly={readOnly} />
-        <div className="toolbar-divider"></div>
-
-        <div
-          className="toolbar-media-group"
-          style={{ alignItems: "center", display: "flex" }}
-        >
-          <ImageAlignmentControls editor={editor} readOnly={readOnly} />
-          <ImageGroupAlignmentControls editor={editor} readOnly={readOnly} />
-          <YouTubeControls editor={editor} readOnly={readOnly} />
-        </div>
+        <ToolbarDivider />
         <SpecialFeaturesControls
           editor={editor}
           readOnly={readOnly}
-          onMathDialogOpen={onMathDialogOpen ? onMathDialogOpen : () => {}}
-          onImagePicker={onImagePicker ? onImagePicker : () => {}}
+          onMathDialogOpen={onMathDialogOpen ?? (() => {})}
+          onImagePicker={onImagePicker ?? (() => {})}
         />
+        <ImageAlignmentControls editor={editor} readOnly={readOnly} />
+        <ImageGroupAlignmentControls editor={editor} readOnly={readOnly} />
+        <YouTubeControls editor={editor} readOnly={readOnly} />
       </div>
     </div>
   );

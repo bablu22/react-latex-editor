@@ -1,6 +1,6 @@
 {
   "name": "react-latex-editor",
-  "version": "1.3.6",
+  "version": "2.0.0",
   "description": "A professional React rich text editor with mathematical equation support, built on TipTap with MathLive integration. Production-ready with TypeScript support, accessibility features, and industrial-grade error handling.",
   "type": "module",
   "main": "dist/index.cjs.js",
@@ -33,8 +33,8 @@
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx",
-    "format": "prettier --write src/**/*.{ts,tsx}"
+    "lint": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
   "keywords": [
     "react",
@@ -51,7 +51,7 @@
     "mathematics",
     "formula-editor"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "bablu22 <https://github.com/bablu22>",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 import "./ResizableYoutubeView.css";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { Node } from "@tiptap/pm/model";
 
@@ -18,56 +18,66 @@ interface ResizableYoutubeViewProps {
   selected?: boolean;
 }
 
+const MIN_WIDTH = 200;
+const MIN_HEIGHT = 150;
+
 const ResizableYoutubeView: React.FC<ResizableYoutubeViewProps> = ({
   node,
   updateAttributes,
   selected,
 }) => {
-  const [isResizing, setIsResizing] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [startWidth, setStartWidth] = useState(0);
-  const [startHeight, setStartHeight] = useState(0);
+  const resizeRef = useRef<{
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    direction: string;
+  } | null>(null);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, direction: string) => {
       e.preventDefault();
-      setIsResizing(true);
-      setStartX(e.clientX);
-      setStartY(e.clientY);
-      setStartWidth(parseInt(node.attrs.width));
-      setStartHeight(parseInt(node.attrs.height));
+      e.stopPropagation();
 
-      const handleMouseMove = (e: MouseEvent) => {
-        if (!isResizing) return;
+      resizeRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startWidth: parseInt(String(node.attrs.width), 10) || 640,
+        startHeight: parseInt(String(node.attrs.height), 10) || 360,
+        direction,
+      };
 
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const state = resizeRef.current;
+        if (!state) return;
 
-        let newWidth = startWidth;
-        let newHeight = startHeight;
+        const deltaX = moveEvent.clientX - state.startX;
+        const deltaY = moveEvent.clientY - state.startY;
 
-        if (direction.includes("right")) {
-          newWidth = Math.max(200, startWidth + deltaX);
+        let newWidth = state.startWidth;
+        let newHeight = state.startHeight;
+
+        if (state.direction.includes("right")) {
+          newWidth = Math.max(MIN_WIDTH, state.startWidth + deltaX);
         }
-        if (direction.includes("left")) {
-          newWidth = Math.max(200, startWidth - deltaX);
+        if (state.direction.includes("left")) {
+          newWidth = Math.max(MIN_WIDTH, state.startWidth - deltaX);
         }
-        if (direction.includes("bottom")) {
-          newHeight = Math.max(150, startHeight + deltaY);
+        if (state.direction.includes("bottom")) {
+          newHeight = Math.max(MIN_HEIGHT, state.startHeight + deltaY);
         }
-        if (direction.includes("top")) {
-          newHeight = Math.max(150, startHeight - deltaY);
+        if (state.direction.includes("top")) {
+          newHeight = Math.max(MIN_HEIGHT, state.startHeight - deltaY);
         }
 
         updateAttributes({
-          width: `${newWidth}px`,
-          height: `${newHeight}px`,
+          width: `${Math.round(newWidth)}px`,
+          height: `${Math.round(newHeight)}px`,
         });
       };
 
       const handleMouseUp = () => {
-        setIsResizing(false);
+        resizeRef.current = null;
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
       };
@@ -75,21 +85,14 @@ const ResizableYoutubeView: React.FC<ResizableYoutubeViewProps> = ({
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [
-      isResizing,
-      startX,
-      startY,
-      startWidth,
-      startHeight,
-      node.attrs.width,
-      node.attrs.height,
-      updateAttributes,
-    ],
+    [node.attrs.width, node.attrs.height, updateAttributes],
   );
 
   const handleAlignChange = (align: string) => {
     updateAttributes({ align });
   };
+
+  const align = node.attrs.align || "center";
 
   return (
     <NodeViewWrapper
@@ -97,10 +100,12 @@ const ResizableYoutubeView: React.FC<ResizableYoutubeViewProps> = ({
         selected ? "ProseMirror-selectednode" : ""
       }`}
       style={{
-        textAlign: node.attrs.align as any,
+        textAlign: align as "left" | "center" | "right",
         position: "relative",
-        display: "inline-block",
+        display: "block",
+        width: "100%",
       }}
+      data-align={align}
     >
       <div
         className="resizable-youtube-container"
@@ -109,139 +114,72 @@ const ResizableYoutubeView: React.FC<ResizableYoutubeViewProps> = ({
           display: "inline-block",
           width: node.attrs.width,
           height: node.attrs.height,
+          maxWidth: "100%",
         }}
       >
         <iframe
           src={node.attrs.src}
           width={node.attrs.width}
           height={node.attrs.height}
-          frameBorder="0"
+          title="YouTube video"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           style={{
             display: "block",
             width: "100%",
             height: "100%",
+            border: 0,
           }}
         />
 
         {selected && (
           <>
-            {/* Resize handles */}
             <div
               className="resize-handle resize-handle-bottom-right"
               onMouseDown={(e) => handleMouseDown(e, "bottom-right")}
-              style={{
-                position: "absolute",
-                bottom: "-5px",
-                right: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "nw-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
             <div
               className="resize-handle resize-handle-bottom-left"
               onMouseDown={(e) => handleMouseDown(e, "bottom-left")}
-              style={{
-                position: "absolute",
-                bottom: "-5px",
-                left: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "ne-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
             <div
               className="resize-handle resize-handle-top-right"
               onMouseDown={(e) => handleMouseDown(e, "top-right")}
-              style={{
-                position: "absolute",
-                top: "-5px",
-                right: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "ne-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
             <div
               className="resize-handle resize-handle-top-left"
               onMouseDown={(e) => handleMouseDown(e, "top-left")}
-              style={{
-                position: "absolute",
-                top: "-5px",
-                left: "-5px",
-                width: "10px",
-                height: "10px",
-                backgroundColor: "#007acc",
-                cursor: "nw-resize",
-                borderRadius: "2px",
-              }}
+              aria-hidden="true"
             />
 
-            {/* Alignment controls */}
-            <div
-              className="alignment-controls"
-              style={{
-                position: "absolute",
-                top: "-30px",
-                left: "0",
-                display: "flex",
-                gap: "5px",
-                backgroundColor: "white",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "2px",
-              }}
-            >
+            <div className="alignment-controls" role="group" aria-label="Video alignment">
               <button
                 onClick={() => handleAlignChange("left")}
-                style={{
-                  padding: "2px 6px",
-                  border: "none",
-                  backgroundColor:
-                    node.attrs.align === "left" ? "#007acc" : "transparent",
-                  color: node.attrs.align === "left" ? "white" : "black",
-                  cursor: "pointer",
-                  borderRadius: "2px",
-                }}
+                className={align === "left" ? "is-active" : ""}
                 type="button"
+                aria-label="Align left"
+                aria-pressed={align === "left"}
               >
                 ←
               </button>
               <button
                 onClick={() => handleAlignChange("center")}
-                style={{
-                  padding: "2px 6px",
-                  border: "none",
-                  backgroundColor:
-                    node.attrs.align === "center" ? "#007acc" : "transparent",
-                  color: node.attrs.align === "center" ? "white" : "black",
-                  cursor: "pointer",
-                  borderRadius: "2px",
-                }}
+                className={align === "center" ? "is-active" : ""}
                 type="button"
+                aria-label="Align center"
+                aria-pressed={align === "center"}
               >
                 ⟷
               </button>
               <button
                 onClick={() => handleAlignChange("right")}
-                style={{
-                  padding: "2px 6px",
-                  border: "none",
-                  backgroundColor:
-                    node.attrs.align === "right" ? "#007acc" : "transparent",
-                  color: node.attrs.align === "right" ? "white" : "black",
-                  cursor: "pointer",
-                  borderRadius: "2px",
-                }}
+                className={align === "right" ? "is-active" : ""}
                 type="button"
+                aria-label="Align right"
+                aria-pressed={align === "right"}
               >
                 →
               </button>

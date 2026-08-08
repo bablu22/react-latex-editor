@@ -103,8 +103,6 @@ export const FONT_FAMILIES = [
   { label: "Courier New", value: "Courier New, monospace" },
   { label: "Georgia", value: "Georgia, serif" },
   { label: "Verdana", value: "Verdana, sans-serif" },
-  { label: "Comic Sans", value: "Comic Sans MS, cursive" },
-  { label: "Impact", value: "Impact, sans-serif" },
   { label: "Trebuchet", value: "Trebuchet MS, sans-serif" },
 ] as const;
 

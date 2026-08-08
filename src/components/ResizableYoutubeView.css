@@ -93,3 +93,8 @@
 .alignment-controls button:hover {
   background: #e0e7ef;
 }
+
+.alignment-controls button.is-active {
+  background: #2563eb;
+  color: #fff;
+}

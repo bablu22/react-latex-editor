@@ -1,107 +1,283 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { MAX_FILE_SIZE } from "../constants/config";
+import { formatFileSize } from "../utils/helpers";
+import {
+  IMAGE_ACCEPT,
+  filesToImageSources,
+  isLikelySvgMarkup,
+  isSvgSource,
+  svgMarkupToDataUrl,
+} from "../utils/media";
 
 interface ImagePickerDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onImageSelect: (urls: string[]) => void;
+  onImageSelect: (
+    items: Array<{
+      src: string;
+      alt?: string;
+      mediaType?: "image" | "svg";
+    }>,
+  ) => void;
+  onUploadClick?: () => void;
+}
+
+type Tab = "upload" | "url" | "svg";
+
+function isLikelyImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function loadImage(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Could not load image from URL"));
+    img.src = url;
+  });
 }
 
 const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   isOpen,
   onClose,
   onImageSelect,
+  onUploadClick,
 }) => {
+  const [tab, setTab] = useState<Tab>("upload");
   const [imageUrl, setImageUrl] = useState("");
+  const [svgMarkup, setSvgMarkup] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!imageUrl.trim()) return;
+  useEffect(() => {
+    if (!isOpen) return;
+    setError(null);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
 
-    setIsLoading(true);
-    try {
-      // Validate the image URL
-      const response = await fetch(imageUrl, { method: "HEAD" });
-      if (!response.ok) {
-        throw new Error("Invalid image URL or image not accessible");
+  const handleFileUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files?.length) return;
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const items = await filesToImageSources(files);
+        onImageSelect(
+          items.map((item) => ({
+            src: item.src,
+            alt: item.alt,
+            mediaType: item.isSvg ? "svg" : "image",
+          })),
+        );
+        onClose();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load file");
+      } finally {
+        setIsLoading(false);
+        e.target.value = "";
+      }
+    },
+    [onImageSelect, onClose],
+  );
+
+  const handleUrlSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const url = imageUrl.trim();
+      if (!url) return;
+
+      if (!isLikelyImageUrl(url)) {
+        setError("Please enter a valid http(s) image or SVG URL");
+        return;
       }
 
-      onImageSelect([imageUrl]);
-      setImageUrl("");
-      onClose();
-    } catch (error) {
-      alert(
-        `Error: ${
-          error instanceof Error ? error.message : "Failed to load image"
-        }`,
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsLoading(true);
+      setError(null);
+      try {
+        await loadImage(url);
+        onImageSelect([
+          {
+            src: url,
+            mediaType: isSvgSource(url) ? "svg" : "image",
+          },
+        ]);
+        setImageUrl("");
+        onClose();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load image");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [imageUrl, onImageSelect, onClose],
+  );
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const handleSvgSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const markup = svgMarkup.trim();
+      if (!markup) return;
 
-    const urls: string[] = [];
-    Array.from(files).forEach((file) => {
-      const url = URL.createObjectURL(file);
-      urls.push(url);
-    });
-
-    onImageSelect(urls);
-    onClose();
-  };
+      setError(null);
+      try {
+        if (!isLikelySvgMarkup(markup)) {
+          throw new Error("Paste valid SVG markup starting with <svg>");
+        }
+        const src = svgMarkupToDataUrl(markup);
+        onImageSelect([{ src, alt: "SVG figure", mediaType: "svg" }]);
+        setSvgMarkup("");
+        onClose();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Invalid SVG");
+      }
+    },
+    [svgMarkup, onImageSelect, onClose],
+  );
 
   if (!isOpen) return null;
 
   return (
-    <div className="image-dialog-overlay" onClick={onClose}>
-      <div className="image-dialog" onClick={(e) => e.stopPropagation()}>
-        <h3>Insert Image</h3>
+    <div className="image-dialog-overlay" onClick={onClose} role="presentation">
+      <div
+        className="image-dialog"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="image-dialog-title"
+      >
+        <h3 id="image-dialog-title">Insert Image / SVG</h3>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="url"
-            placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            disabled={isLoading}
-          />
+        <div className="image-dialog-tabs" role="tablist">
+          {(
+            [
+              ["upload", "Upload"],
+              ["url", "URL"],
+              ["svg", "Paste SVG"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              className={`image-dialog-tab${tab === id ? " is-active" : ""}`}
+              onClick={() => {
+                setTab(id);
+                setError(null);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-          <div className="image-dialog-buttons">
-            <button type="submit" disabled={!imageUrl.trim() || isLoading}>
-              {isLoading ? "Loading..." : "Insert"}
+        {error && (
+          <p className="image-dialog-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        {tab === "upload" && (
+          <div className="image-dialog-upload">
+            <button
+              type="button"
+              className="image-dialog-upload-btn"
+              disabled={isLoading}
+              onClick={() => {
+                if (onUploadClick) {
+                  onClose();
+                  onUploadClick();
+                } else {
+                  fileInputRef.current?.click();
+                }
+              }}
+            >
+              {isLoading ? "Loading..." : "Choose image or SVG file"}
             </button>
-            <button type="button" onClick={onClose}>
-              Cancel
-            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={IMAGE_ACCEPT}
+              multiple
+              onChange={handleFileUpload}
+              hidden
+            />
+            <p className="image-dialog-hint">
+              JPG, PNG, GIF, WebP, <strong>SVG</strong> · max{" "}
+              {formatFileSize(MAX_FILE_SIZE.image)}
+            </p>
+            <p className="image-dialog-hint">
+              Ideal for math figures, graphs, and diagrams exported as SVG.
+            </p>
           </div>
-        </form>
+        )}
 
-        <div style={{ marginTop: "15px", textAlign: "center" }}>
-          <p style={{ marginBottom: "10px", color: "#666" }}>
-            Or upload from your device:
-          </p>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileUpload}
-            style={{ width: "100%" }}
-          />
-        </div>
+        {tab === "url" && (
+          <form onSubmit={handleUrlSubmit}>
+            <label htmlFor="image-url-input" className="sr-only">
+              Image or SVG URL
+            </label>
+            <input
+              id="image-url-input"
+              type="url"
+              placeholder="https://example.com/figure.svg"
+              value={imageUrl}
+              onChange={(e) => {
+                setImageUrl(e.target.value);
+                setError(null);
+              }}
+              disabled={isLoading}
+              autoComplete="off"
+            />
+            <div className="image-dialog-buttons">
+              <button type="submit" disabled={!imageUrl.trim() || isLoading}>
+                {isLoading ? "Loading..." : "Insert URL"}
+              </button>
+              <button type="button" onClick={onClose}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
 
-        <div style={{ marginTop: "15px", fontSize: "12px", color: "#666" }}>
-          <p>
-            <strong>Supported formats:</strong> JPG, PNG, GIF, WebP
-          </p>
-          <p>
-            <strong>Tip:</strong> You can also paste image URLs directly into
-            the editor
-          </p>
-        </div>
+        {tab === "svg" && (
+          <form onSubmit={handleSvgSubmit}>
+            <label htmlFor="svg-markup-input" className="sr-only">
+              SVG markup
+            </label>
+            <textarea
+              id="svg-markup-input"
+              className="image-dialog-svg-input"
+              placeholder={'<svg xmlns="http://www.w3.org/2000/svg" ...>...</svg>'}
+              value={svgMarkup}
+              onChange={(e) => {
+                setSvgMarkup(e.target.value);
+                setError(null);
+              }}
+              rows={8}
+            />
+            <div className="image-dialog-buttons">
+              <button type="submit" disabled={!svgMarkup.trim()}>
+                Insert SVG
+              </button>
+              <button type="button" onClick={onClose}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
