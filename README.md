@@ -306,6 +306,7 @@ import {
 | Math missing in Viewer | Keep `enableMath` enabled (default); check that content includes math nodes from the Editor |
 | Custom image button does nothing | Call `addImagesFromFiles` / `addImage` / `addSvg` inside your `onImageSelectionRequest` handler |
 | SVG not inserting | Use the **Paste SVG code** toolbar button, or `addSvg` with full `<svg>…</svg>` markup |
+| `getStyleProperty` / TipTap export errors | Caused by mixing TipTap v2 and v3 in the host app. Use `react-latex-editor@2.0.1+` (TipTap is pinned and bundled). Delete `node_modules` + lockfile and reinstall, or align all `@tiptap/*` packages to the same major. |
 
 ---
 
