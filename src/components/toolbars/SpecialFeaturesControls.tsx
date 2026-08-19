@@ -1,4 +1,4 @@
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useState, type KeyboardEvent } from "react";
 import ToolbarButton from "./ToolbarButton";
 import { insertSvg, insertTable } from "../../utils/editorUtils";
 import { isLikelySvgMarkup } from "../../utils/media";
@@ -42,25 +42,32 @@ const SpecialFeaturesControls = ({
     setSvgError(null);
   }, []);
 
-  const handleSvgSubmit = useCallback(
-    async (event: FormEvent) => {
-      event.preventDefault();
-      if (!editor) return;
+  const handleSvgInsert = useCallback(async () => {
+    if (!editor) return;
 
-      const markup = svgMarkup.trim();
-      if (!markup || !isLikelySvgMarkup(markup)) {
-        setSvgError("Paste valid SVG markup (must include an <svg> element)");
-        return;
-      }
+    const markup = svgMarkup.trim();
+    if (!markup || !isLikelySvgMarkup(markup)) {
+      setSvgError("Paste valid SVG markup (must include an <svg> element)");
+      return;
+    }
 
-      try {
-        await insertSvg(editor, markup);
-        closeSvgDialog();
-      } catch (err) {
-        setSvgError(err instanceof Error ? err.message : "Failed to insert SVG");
+    try {
+      await insertSvg(editor, markup);
+      closeSvgDialog();
+    } catch (err) {
+      setSvgError(err instanceof Error ? err.message : "Failed to insert SVG");
+    }
+  }, [editor, svgMarkup, closeSvgDialog]);
+
+  const handleSvgKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        void handleSvgInsert();
       }
     },
-    [editor, svgMarkup, closeSvgDialog],
+    [handleSvgInsert],
   );
 
   return (
@@ -90,7 +97,11 @@ const SpecialFeaturesControls = ({
           </svg>
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => setShowSvgDialog(true)}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setShowSvgDialog(true);
+          }}
           title="Paste SVG code"
           disabled={!editor || readOnly}
         >
@@ -151,7 +162,7 @@ const SpecialFeaturesControls = ({
                 {svgError}
               </p>
             )}
-            <form onSubmit={handleSvgSubmit}>
+            <div>
               <label htmlFor="toolbar-svg-markup-input" className="sr-only">
                 SVG markup
               </label>
@@ -164,18 +175,27 @@ const SpecialFeaturesControls = ({
                   setSvgMarkup(e.target.value);
                   setSvgError(null);
                 }}
+                onKeyDown={handleSvgKeyDown}
                 rows={10}
                 autoFocus
               />
               <div className="image-dialog-buttons">
-                <button type="submit" disabled={!svgMarkup.trim()}>
+                <button
+                  type="button"
+                  disabled={!svgMarkup.trim()}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void handleSvgInsert();
+                  }}
+                >
                   Insert SVG
                 </button>
                 <button type="button" onClick={closeSvgDialog}>
                   Cancel
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

@@ -92,59 +92,51 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
     [onImageSelect, onClose],
   );
 
-  const handleUrlSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const url = imageUrl.trim();
-      if (!url) return;
+  const handleUrlInsert = useCallback(async () => {
+    const url = imageUrl.trim();
+    if (!url) return;
 
-      if (!isLikelyImageUrl(url)) {
-        setError("Please enter a valid http(s) image or SVG URL");
-        return;
+    if (!isLikelyImageUrl(url)) {
+      setError("Please enter a valid http(s) image or SVG URL");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      await loadImage(url);
+      onImageSelect([
+        {
+          src: url,
+          mediaType: isSvgSource(url) ? "svg" : "image",
+        },
+      ]);
+      setImageUrl("");
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load image");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [imageUrl, onImageSelect, onClose]);
+
+  const handleSvgInsert = useCallback(() => {
+    const markup = svgMarkup.trim();
+    if (!markup) return;
+
+    setError(null);
+    try {
+      if (!isLikelySvgMarkup(markup)) {
+        throw new Error("Paste valid SVG markup starting with <svg>");
       }
-
-      setIsLoading(true);
-      setError(null);
-      try {
-        await loadImage(url);
-        onImageSelect([
-          {
-            src: url,
-            mediaType: isSvgSource(url) ? "svg" : "image",
-          },
-        ]);
-        setImageUrl("");
-        onClose();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load image");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [imageUrl, onImageSelect, onClose],
-  );
-
-  const handleSvgSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      const markup = svgMarkup.trim();
-      if (!markup) return;
-
-      setError(null);
-      try {
-        if (!isLikelySvgMarkup(markup)) {
-          throw new Error("Paste valid SVG markup starting with <svg>");
-        }
-        const src = svgMarkupToDataUrl(markup);
-        onImageSelect([{ src, alt: "SVG figure", mediaType: "svg" }]);
-        setSvgMarkup("");
-        onClose();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Invalid SVG");
-      }
-    },
-    [svgMarkup, onImageSelect, onClose],
-  );
+      const src = svgMarkupToDataUrl(markup);
+      onImageSelect([{ src, alt: "SVG figure", mediaType: "svg" }]);
+      setSvgMarkup("");
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid SVG");
+    }
+  }, [svgMarkup, onImageSelect, onClose]);
 
   if (!isOpen) return null;
 
@@ -225,7 +217,7 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
         )}
 
         {tab === "url" && (
-          <form onSubmit={handleUrlSubmit}>
+          <div>
             <label htmlFor="image-url-input" className="sr-only">
               Image or SVG URL
             </label>
@@ -238,22 +230,37 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
                 setImageUrl(e.target.value);
                 setError(null);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  void handleUrlInsert();
+                }
+              }}
               disabled={isLoading}
               autoComplete="off"
             />
             <div className="image-dialog-buttons">
-              <button type="submit" disabled={!imageUrl.trim() || isLoading}>
+              <button
+                type="button"
+                disabled={!imageUrl.trim() || isLoading}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  void handleUrlInsert();
+                }}
+              >
                 {isLoading ? "Loading..." : "Insert URL"}
               </button>
               <button type="button" onClick={onClose}>
                 Cancel
               </button>
             </div>
-          </form>
+          </div>
         )}
 
         {tab === "svg" && (
-          <form onSubmit={handleSvgSubmit}>
+          <div>
             <label htmlFor="svg-markup-input" className="sr-only">
               SVG markup
             </label>
@@ -266,17 +273,32 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
                 setSvgMarkup(e.target.value);
                 setError(null);
               }}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSvgInsert();
+                }
+              }}
               rows={8}
             />
             <div className="image-dialog-buttons">
-              <button type="submit" disabled={!svgMarkup.trim()}>
+              <button
+                type="button"
+                disabled={!svgMarkup.trim()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSvgInsert();
+                }}
+              >
                 Insert SVG
               </button>
               <button type="button" onClick={onClose}>
                 Cancel
               </button>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </div>
