@@ -28,10 +28,8 @@ export function elementToDOMOutputSpec(element: Element): DOMOutputSpec {
   return [element.tagName, attrs, ...children];
 }
 
-export function svgMarkupToDOMOutputSpec(
-  svgMarkup: string,
-  size?: { width?: string; height?: string },
-): DOMOutputSpec {
+/** Preserve intrinsic SVG width/height/viewBox from the source markup. */
+export function svgMarkupToDOMOutputSpec(svgMarkup: string): DOMOutputSpec {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgMarkup, "image/svg+xml");
   const svg = doc.documentElement;
@@ -39,15 +37,6 @@ export function svgMarkupToDOMOutputSpec(
   if (svg.tagName.toLowerCase() !== "svg") {
     throw new Error("Not valid SVG markup");
   }
-
-    if (size?.width) {
-      svg.setAttribute("width", "100%");
-      svg.style.maxWidth = size.width;
-    } else {
-      svg.setAttribute("width", "100%");
-    }
-    svg.removeAttribute("height");
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
   if (!svg.getAttribute("xmlns")) {
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");

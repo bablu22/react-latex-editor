@@ -157,10 +157,10 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
       data-media-type={isSvg ? "svg" : "image"}
     >
       <div
-        className={`resizable-image-container align-${align}${isSvg ? " is-svg" : ""}`}
+        className={`resizable-image-container align-${align}${isSvg ? " is-svg is-svg-natural" : ""}`}
         style={{
-          width: node.attrs.width || "auto",
-          height: node.attrs.height || "auto",
+          width: isSvg ? "auto" : node.attrs.width || "auto",
+          height: isSvg ? "auto" : node.attrs.height || "auto",
           display: "inline-block",
           position: "relative",
         }}
@@ -170,10 +170,9 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
           <div
             className="inline-svg-host"
             style={{
-              display: "block",
-              maxWidth: "100%",
-              width: node.attrs.width || "100%",
-              height: node.attrs.height === "auto" ? "auto" : node.attrs.height,
+              display: "inline-block",
+              width: "auto",
+              height: "auto",
               userSelect: "none",
             }}
             dangerouslySetInnerHTML={{ __html: inlineSvgMarkup }}
@@ -184,19 +183,20 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
             src={node.attrs.src}
             alt={node.attrs.alt || (isSvg ? "SVG figure" : "")}
             title={node.attrs.title || ""}
-            width={node.attrs.width}
-            height={node.attrs.height}
+            width={isSvg ? undefined : node.attrs.width}
+            height={isSvg ? undefined : node.attrs.height}
             draggable={false}
             style={{
               display: "block",
-              maxWidth: "100%",
-              height: "auto",
+              maxWidth: isSvg ? "none" : "100%",
+              width: isSvg ? "auto" : undefined,
+              height: isSvg ? "auto" : "auto",
               userSelect: "none",
             }}
           />
         )}
 
-        {selected && (
+        {selected && !isSvg && (
           <>
             <div
               className="resize-handle resize-handle-bottom-right"
@@ -218,8 +218,11 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
               onMouseDown={(e) => handleMouseDown(e, "top-left")}
               aria-hidden="true"
             />
+          </>
+        )}
 
-            <div className="alignment-controls" role="group" aria-label="Image alignment">
+        {selected && (
+          <div className="alignment-controls" role="group" aria-label="Image alignment">
               <button
                 onClick={() => handleAlignChange("left")}
                 className={align === "left" ? "is-active" : ""}
@@ -248,7 +251,6 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
                 →
               </button>
             </div>
-          </>
         )}
       </div>
     </NodeViewWrapper>

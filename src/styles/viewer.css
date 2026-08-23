@@ -185,13 +185,18 @@
   max-width: 100%;
 }
 
-.viewer-content .resizable-image-container img,
-.viewer-content .resizable-image-container .inline-svg-host,
-.viewer-content .resizable-image-container svg {
+.viewer-content .resizable-image-container img {
   display: block;
-  max-width: 100%;
-  width: 100%;
+  margin: 0;
+}
+
+.viewer-content .resizable-image-container.is-svg,
+.viewer-content .resizable-image-container.is-svg .inline-svg-host,
+.viewer-content .resizable-image-container.is-svg svg {
+  display: inline-block;
+  width: auto;
   height: auto;
+  max-width: none;
   margin: 0;
 }
 

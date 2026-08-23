@@ -52,7 +52,7 @@ function normalizeImageItem(
     return {
       src: item,
       alt: "",
-      width: isSvg ? "420px" : "500px",
+      width: isSvg ? "auto" : "500px",
       height: "auto",
       mediaType: isSvg ? "svg" : "image",
     };
@@ -62,7 +62,7 @@ function normalizeImageItem(
   return {
     src: item.src,
     alt: item.alt || "",
-    width: item.width || (isSvg ? "420px" : "500px"),
+    width: item.width || (isSvg ? "auto" : "500px"),
     height: item.height || "auto",
     mediaType: item.mediaType || (isSvg ? "svg" : "image"),
     svgContent: item.svgContent,
@@ -85,7 +85,7 @@ export function addImage(editor: Editor | null, urls: ImageInsertInput) {
       attrs: {
         src: item.src,
         alt: item.alt,
-        width: "250px",
+        width: item.mediaType === "svg" ? "auto" : "250px",
         height: item.height,
         mediaType: item.mediaType,
         svgContent: item.svgContent,
@@ -130,7 +130,7 @@ export function insertSvg(
     addImage(editor, {
       ...attrs,
       alt: attrs.alt || options?.alt || "SVG figure",
-      width: attrs.width || options?.width || "420px",
+      width: attrs.width || "auto",
       mediaType: "svg",
     });
   };

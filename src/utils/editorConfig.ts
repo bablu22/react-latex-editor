@@ -65,7 +65,7 @@ function insertImageNodes(
     const node = imageType.create({
       src: item.src,
       alt: item.alt || "",
-      width: item.width || (item.mediaType === "svg" ? "420px" : "500px"),
+      width: item.width || (item.mediaType === "svg" ? "auto" : "500px"),
       height: "auto",
       mediaType: item.mediaType || "image",
       svgContent: item.svgContent || null,
@@ -254,7 +254,7 @@ export function getEditorProps({
               src: "",
               alt: "SVG figure",
               mediaType: "svg",
-              width: "420px",
+              width: "auto",
               svgContent,
             },
           ]);

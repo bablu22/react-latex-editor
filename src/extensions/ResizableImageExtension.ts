@@ -93,10 +93,7 @@ const ResizableImageExtension = Image.extend({
     const textAlign = textAlignMap[align] || "left";
 
     if (mediaType === "svg" && svgContent) {
-      const svgSpec = svgMarkupToDOMOutputSpec(svgContent, {
-        width: node.attrs.width || "420px",
-        height: node.attrs.height || "auto",
-      });
+      const svgSpec = svgMarkupToDOMOutputSpec(svgContent);
 
       return [
         "div",
@@ -110,7 +107,7 @@ const ResizableImageExtension = Image.extend({
           "div",
           {
             class: `resizable-image-container align-${align} is-svg`,
-            style: `display: inline-block; width: ${node.attrs.width || "420px"}; height: ${node.attrs.height || "auto"};`,
+            style: "display: inline-block; width: auto; height: auto;",
           },
           svgSpec,
         ],
@@ -203,18 +200,15 @@ const ResizableImageExtension = Image.extend({
       if (!svg) return false;
 
       const align = wrapper.getAttribute("data-align") || "left";
-      const width =
-        svg.getAttribute("width") ||
-        (wrapper.querySelector(".resizable-image-container") as HTMLElement | null)
-          ?.style.width ||
-        "420px";
+      const width = svg.getAttribute("width") || "auto";
+      const height = svg.getAttribute("height") || "auto";
 
       return {
         src: "",
         alt: svg.getAttribute("aria-label") || "SVG figure",
         title: svg.getAttribute("title"),
         width,
-        height: svg.getAttribute("height") || "auto",
+        height,
         align,
         mediaType: "svg" as const,
         svgContent: svg.outerHTML,

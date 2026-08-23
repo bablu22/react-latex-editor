@@ -854,29 +854,19 @@ math-field {
   border: 1px solid #e4e4e7;
   border-radius: 6px;
   padding: 4px;
+  width: auto !important;
+  max-width: none;
 }
 
-.resizable-image-container.is-svg img,
-.resizable-image-container.is-svg .inline-svg-host,
-.resizable-image-container.is-svg .inline-svg-host svg {
-  background: transparent;
-  display: block;
-  max-width: 100%;
-  width: 100%;
+.resizable-image-container.is-svg-natural .inline-svg-host,
+.resizable-image-container.is-svg-natural .inline-svg-host svg {
+  width: auto;
   height: auto;
+  max-width: none;
 }
 
-.inline-svg-host {
+.resizable-image-container.is-svg-natural .inline-svg-host {
   line-height: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.inline-svg-host svg {
-  display: block;
-  max-width: 100%;
-  width: 100%;
-  height: auto;
 }
 
 .svg-badge {
