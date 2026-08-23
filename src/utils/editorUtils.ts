@@ -1,7 +1,7 @@
 import { validateLatex } from "./helpers";
 import type { Editor } from "@tiptap/core";
 import type { ImageInsertInput, ImageInsertItem } from "../types/editor";
-import { filesToImageSources, isSvgSource, svgMarkupToDataUrl } from "./media";
+import { filesToImageSources, isSvgSource, sanitizeSvgMarkup } from "./media";
 
 function normalizeFontSize(size: number | string): string {
   if (typeof size === "number") return `${size}px`;
@@ -58,13 +58,14 @@ function normalizeImageItem(
     };
   }
 
-  const isSvg = item.mediaType === "svg" || isSvgSource(item.src);
+  const isSvg = item.mediaType === "svg" || isSvgSource(item.src) || Boolean(item.svgContent);
   return {
     src: item.src,
     alt: item.alt || "",
     width: item.width || (isSvg ? "420px" : "500px"),
     height: item.height || "auto",
     mediaType: item.mediaType || (isSvg ? "svg" : "image"),
+    svgContent: item.svgContent,
     align: item.align,
   };
 }
@@ -74,7 +75,7 @@ export function addImage(editor: Editor | null, urls: ImageInsertInput) {
 
   const list = (Array.isArray(urls) ? urls : [urls])
     .map(normalizeImageItem)
-    .filter((item) => Boolean(item.src));
+    .filter((item) => Boolean(item.src || item.svgContent));
 
   if (list.length === 0) return;
 
@@ -87,6 +88,7 @@ export function addImage(editor: Editor | null, urls: ImageInsertInput) {
         width: "250px",
         height: item.height,
         mediaType: item.mediaType,
+        svgContent: item.svgContent,
         align: item.align || "left",
       },
     }));
@@ -124,11 +126,11 @@ export function insertSvg(
     return Promise.reject(new Error("Editor instance is not available"));
   }
 
-  const insert = (src: string) => {
+  const insert = (attrs: ImageInsertItem) => {
     addImage(editor, {
-      src,
-      alt: options?.alt || "SVG figure",
-      width: options?.width || "420px",
+      ...attrs,
+      alt: attrs.alt || options?.alt || "SVG figure",
+      width: attrs.width || options?.width || "420px",
       mediaType: "svg",
     });
   };
@@ -137,17 +139,24 @@ export function insertSvg(
     return filesToImageSources([source]).then((items) => {
       const item = items[0];
       if (!item) throw new Error("No SVG file provided");
-      insert(item.src);
+      insert({
+        src: item.src,
+        svgContent: item.svgContent,
+        alt: item.alt,
+      });
     });
   }
 
   const trimmed = source.trim();
   if (trimmed.startsWith("<") || trimmed.includes("<svg")) {
-    insert(svgMarkupToDataUrl(trimmed));
+    insert({
+      src: "",
+      svgContent: sanitizeSvgMarkup(trimmed),
+    });
     return Promise.resolve();
   }
 
-  insert(trimmed);
+  insert({ src: trimmed });
   return Promise.resolve();
 }
 
@@ -169,6 +178,7 @@ export async function addImagesFromFiles(
       src: item.src,
       alt: item.alt,
       mediaType: item.isSvg ? ("svg" as const) : ("image" as const),
+      svgContent: item.svgContent,
     })),
   );
 }

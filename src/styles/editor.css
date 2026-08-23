@@ -849,8 +849,16 @@ math-field {
   padding: 4px;
 }
 
-.resizable-image-container.is-svg img {
+.resizable-image-container.is-svg img,
+.resizable-image-container.is-svg .inline-svg-host svg {
   background: transparent;
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.inline-svg-host {
+  line-height: 0;
 }
 
 .svg-badge {

@@ -1,6 +1,7 @@
 import { Node } from "@tiptap/pm/model";
 import { NodeViewWrapper } from "@tiptap/react";
 import React, { useCallback, useMemo, useRef } from "react";
+import { dataUrlToSvgMarkup } from "../utils/media";
 import "./ResizableImageView.css";
 
 interface ImageNodeAttrs {
@@ -11,6 +12,7 @@ interface ImageNodeAttrs {
   height?: string;
   align?: string;
   mediaType?: "image" | "svg";
+  svgContent?: string | null;
 }
 
 interface ResizableImageViewProps {
@@ -40,13 +42,22 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
   const align = useMemo(() => node.attrs.align || "left", [node.attrs.align]);
   const isSvg = useMemo(() => {
     if (node.attrs.mediaType === "svg") return true;
+    if (node.attrs.svgContent) return true;
     const src = node.attrs.src || "";
     return (
       src.startsWith("data:image/svg+xml") ||
       src.includes("image/svg+xml") ||
       /\.svg(\?|#|$)/i.test(src)
     );
-  }, [node.attrs.mediaType, node.attrs.src]);
+  }, [node.attrs.mediaType, node.attrs.src, node.attrs.svgContent]);
+
+  const inlineSvgMarkup = useMemo(() => {
+    if (node.attrs.svgContent) return node.attrs.svgContent;
+    if (isSvg && node.attrs.src) {
+      return dataUrlToSvgMarkup(node.attrs.src);
+    }
+    return null;
+  }, [node.attrs.svgContent, node.attrs.src, isSvg]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, direction: string) => {
@@ -155,20 +166,35 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
         }}
       >
         {isSvg && <span className="svg-badge">SVG</span>}
-        <img
-          src={node.attrs.src}
-          alt={node.attrs.alt || (isSvg ? "SVG figure" : "")}
-          title={node.attrs.title || ""}
-          width={node.attrs.width}
-          height={node.attrs.height}
-          draggable={false}
-          style={{
-            display: "block",
-            maxWidth: "100%",
-            height: "auto",
-            userSelect: "none",
-          }}
-        />
+        {inlineSvgMarkup ? (
+          <div
+            className="inline-svg-host"
+            style={{
+              display: "block",
+              maxWidth: "100%",
+              width: node.attrs.width || "auto",
+              height: node.attrs.height || "auto",
+              userSelect: "none",
+            }}
+            dangerouslySetInnerHTML={{ __html: inlineSvgMarkup }}
+            aria-label={node.attrs.alt || "SVG figure"}
+          />
+        ) : (
+          <img
+            src={node.attrs.src}
+            alt={node.attrs.alt || (isSvg ? "SVG figure" : "")}
+            title={node.attrs.title || ""}
+            width={node.attrs.width}
+            height={node.attrs.height}
+            draggable={false}
+            style={{
+              display: "block",
+              maxWidth: "100%",
+              height: "auto",
+              userSelect: "none",
+            }}
+          />
+        )}
 
         {selected && (
           <>

@@ -219,6 +219,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
             src: item.src,
             alt: item.alt,
             mediaType: (item.isSvg ? "svg" : "image") as "svg" | "image",
+            svgContent: item.svgContent,
           })),
         );
         setError(null);
@@ -248,6 +249,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         src: string;
         alt?: string;
         mediaType?: "image" | "svg";
+        svgContent?: string;
       }>,
     ) => {
       if (editor) {

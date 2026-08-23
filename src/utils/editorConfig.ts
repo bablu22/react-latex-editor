@@ -35,7 +35,7 @@ import {
   filesToImageSources,
   isLikelySvgMarkup,
   isSupportedImageFile,
-  svgMarkupToDataUrl,
+  sanitizeSvgMarkup,
 } from "./media";
 import type { EditorView } from "@tiptap/pm/view";
 
@@ -53,6 +53,7 @@ function insertImageNodes(
     alt?: string;
     mediaType?: "image" | "svg";
     width?: string;
+    svgContent?: string;
   }>,
 ) {
   const imageType = view.state.schema.nodes.image;
@@ -67,6 +68,7 @@ function insertImageNodes(
       width: item.width || (item.mediaType === "svg" ? "420px" : "500px"),
       height: "auto",
       mediaType: item.mediaType || "image",
+      svgContent: item.svgContent || null,
     });
     tr = tr.replaceSelectionWith(node);
   } else {
@@ -78,6 +80,7 @@ function insertImageNodes(
         width: "250px",
         height: "auto",
         mediaType: item.mediaType || "image",
+        svgContent: item.svgContent || null,
       }),
     );
     if (groupType) {
@@ -231,6 +234,7 @@ export function getEditorProps({
                 src: item.src,
                 alt: item.alt,
                 mediaType: item.isSvg ? "svg" : "image",
+                svgContent: item.svgContent,
               })),
             );
           })
@@ -244,9 +248,15 @@ export function getEditorProps({
       if (text && isLikelySvgMarkup(text)) {
         event.preventDefault();
         try {
-          const src = svgMarkupToDataUrl(text);
+          const svgContent = sanitizeSvgMarkup(text);
           insertImageNodes(view, [
-            { src, alt: "SVG figure", mediaType: "svg", width: "420px" },
+            {
+              src: "",
+              alt: "SVG figure",
+              mediaType: "svg",
+              width: "420px",
+              svgContent,
+            },
           ]);
         } catch (err) {
           console.error("Paste SVG markup failed:", err);
@@ -272,6 +282,7 @@ export function getEditorProps({
               src: item.src,
               alt: item.alt,
               mediaType: item.isSvg ? "svg" : "image",
+              svgContent: item.svgContent,
             })),
           );
         })

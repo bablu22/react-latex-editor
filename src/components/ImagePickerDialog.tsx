@@ -6,7 +6,7 @@ import {
   filesToImageSources,
   isLikelySvgMarkup,
   isSvgSource,
-  svgMarkupToDataUrl,
+  sanitizeSvgMarkup,
 } from "../utils/media";
 
 interface ImagePickerDialogProps {
@@ -17,6 +17,7 @@ interface ImagePickerDialogProps {
       src: string;
       alt?: string;
       mediaType?: "image" | "svg";
+      svgContent?: string;
     }>,
   ) => void;
   onUploadClick?: () => void;
@@ -79,6 +80,7 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
             src: item.src,
             alt: item.alt,
             mediaType: item.isSvg ? "svg" : "image",
+            svgContent: item.svgContent,
           })),
         );
         onClose();
@@ -129,8 +131,8 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
       if (!isLikelySvgMarkup(markup)) {
         throw new Error("Paste valid SVG markup starting with <svg>");
       }
-      const src = svgMarkupToDataUrl(markup);
-      onImageSelect([{ src, alt: "SVG figure", mediaType: "svg" }]);
+      const svgContent = sanitizeSvgMarkup(markup);
+      onImageSelect([{ src: "", alt: "SVG figure", mediaType: "svg", svgContent }]);
       setSvgMarkup("");
       onClose();
     } catch (err) {

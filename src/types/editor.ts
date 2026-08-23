@@ -36,6 +36,8 @@ export interface ImageInsertItem {
   height?: string;
   /** Mark as SVG figure (auto-detected from src when omitted) */
   mediaType?: "image" | "svg";
+  /** Raw inline SVG markup (preserved in getHTML() output) */
+  svgContent?: string;
   align?: "left" | "center" | "right";
 }
 

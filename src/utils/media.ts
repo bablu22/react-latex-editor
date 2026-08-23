@@ -40,6 +40,58 @@ export function isLikelySvgMarkup(text: string): boolean {
 }
 
 /**
+ * Sanitize pasted SVG markup (strip scripts, event handlers, etc.).
+ */
+export function sanitizeSvgMarkup(raw: string): string {
+  let svg = raw.trim();
+  if (!isLikelySvgMarkup(svg)) {
+    throw new Error("Not valid SVG markup");
+  }
+
+  svg = svg.replace(/<\?xml[\s\S]*?\?>/gi, "").trim();
+  svg = svg.replace(/<!DOCTYPE[\s\S]*?>/gi, "").trim();
+  svg = svg.replace(/<script[\s\S]*?<\/script>/gi, "");
+  svg = svg.replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "");
+  svg = svg.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+  svg = svg.replace(
+    /(href|xlink:href)\s*=\s*("|')\s*javascript:[^"']*\2/gi,
+    '$1=$2#$2',
+  );
+
+  if (!/\sxmlns\s*=/.test(svg)) {
+    svg = svg.replace(
+      /<svg\b/i,
+      '<svg xmlns="http://www.w3.org/2000/svg"',
+    );
+  }
+
+  return svg;
+}
+
+/**
+ * Encode SVG as a data URL (legacy / URL-based SVG only).
+ */
+export function svgMarkupToDataUrl(raw: string): string {
+  const svg = sanitizeSvgMarkup(raw);
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+export function readSvgFileAsMarkup(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        resolve(sanitizeSvgMarkup(String(reader.result)));
+      } catch (err) {
+        reject(err instanceof Error ? err : new Error("Invalid SVG file"));
+      }
+    };
+    reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
+    reader.readAsText(file);
+  });
+}
+
+/**
  * File picker accept string — MIME types + extensions for broader OS support
  */
 export const IMAGE_ACCEPT =
@@ -47,6 +99,8 @@ export const IMAGE_ACCEPT =
 
 /** SVG-only accept string for the dedicated Upload SVG toolbar button */
 export const SVG_ACCEPT = "image/svg+xml,.svg";
+
+export { dataUrlToSvgMarkup } from "./svgDom";
 
 export function assertImageFileSize(file: File): void {
   if (file.size > MAX_FILE_SIZE.image) {
@@ -65,57 +119,39 @@ export function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-/**
- * Light sanitize then encode SVG markup as a data URL (safe in <img src>).
- * Scripts do not run inside <img>, but we still strip common vectors.
- */
-export function svgMarkupToDataUrl(raw: string): string {
-  let svg = raw.trim();
-  if (!isLikelySvgMarkup(svg)) {
-    throw new Error("Not valid SVG markup");
-  }
-
-  // Drop XML declaration / DOCTYPE noise for cleaner data URLs
-  svg = svg.replace(/<\?xml[\s\S]*?\?>/gi, "").trim();
-  svg = svg.replace(/<!DOCTYPE[\s\S]*?>/gi, "").trim();
-
-  // Remove script and foreignObject (common XSS / embed vectors)
-  svg = svg.replace(/<script[\s\S]*?<\/script>/gi, "");
-  svg = svg.replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "");
-  // Strip inline event handlers
-  svg = svg.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
-  // Block javascript: URLs
-  svg = svg.replace(
-    /(href|xlink:href)\s*=\s*("|')\s*javascript:[^"']*\2/gi,
-    '$1=$2#$2',
-  );
-
-  if (!/\sxmlns\s*=/.test(svg)) {
-    svg = svg.replace(
-      /<svg\b/i,
-      '<svg xmlns="http://www.w3.org/2000/svg"',
-    );
-  }
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 export async function filesToImageSources(files: FileList | File[]): Promise<
-  Array<{ src: string; alt: string; isSvg: boolean }>
+  Array<{ src: string; alt: string; isSvg: boolean; svgContent?: string }>
 > {
   const list = Array.from(files);
-  const results: Array<{ src: string; alt: string; isSvg: boolean }> = [];
+  const results: Array<{
+    src: string;
+    alt: string;
+    isSvg: boolean;
+    svgContent?: string;
+  }> = [];
 
   for (const file of list) {
     if (!isSupportedImageFile(file)) {
       throw new Error(`Unsupported format: ${file.name}`);
     }
     assertImageFileSize(file);
+
+    if (isSvgFile(file)) {
+      const svgContent = await readSvgFileAsMarkup(file);
+      results.push({
+        src: "",
+        alt: file.name.replace(/\.[^.]+$/, ""),
+        isSvg: true,
+        svgContent,
+      });
+      continue;
+    }
+
     const src = await fileToDataUrl(file);
     results.push({
       src,
       alt: file.name.replace(/\.[^.]+$/, ""),
-      isSvg: isSvgFile(file),
+      isSvg: false,
     });
   }
 

@@ -57,6 +57,7 @@ export {
   isSvgSource,
   isLikelySvgMarkup,
   fileToDataUrl,
+  sanitizeSvgMarkup,
   svgMarkupToDataUrl,
   filesToImageSources,
 } from "./utils/media";
