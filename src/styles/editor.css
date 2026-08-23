@@ -693,20 +693,26 @@ math-field {
 .image-dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2147483000;
   padding: 1rem;
+  overflow: auto;
 }
 
 .image-dialog {
   background: #fff;
   border-radius: 0.75rem;
   padding: 1.25rem;
-  width: min(420px, 100%);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+  width: min(520px, calc(100vw - 2rem));
+  max-width: min(520px, calc(100vw - 2rem));
+  max-height: min(90vh, 720px);
+  overflow: auto;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a;
 }
 
 .image-dialog h3 {
@@ -827,14 +833,15 @@ math-field {
 .image-dialog-svg-input {
   width: 100%;
   box-sizing: border-box;
-  padding: 0.65rem 0.75rem;
+  padding: 0.75rem;
   border: 1px solid #e2e8f0;
   border-radius: 0.5rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   resize: vertical;
-  min-height: 140px;
+  min-height: 180px;
+  max-height: 50vh;
 }
 
 .resizable-image-container.is-svg {
@@ -850,15 +857,26 @@ math-field {
 }
 
 .resizable-image-container.is-svg img,
+.resizable-image-container.is-svg .inline-svg-host,
 .resizable-image-container.is-svg .inline-svg-host svg {
   background: transparent;
   display: block;
   max-width: 100%;
+  width: 100%;
   height: auto;
 }
 
 .inline-svg-host {
   line-height: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.inline-svg-host svg {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
 }
 
 .svg-badge {
@@ -1099,100 +1117,7 @@ math-field {
   max-width: 100%;
 }
 
-/* Math Dialog */
-.math-dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: overlayFadeIn 0.2s ease;
-}
-
-@keyframes overlayFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.math-dialog {
-  background: var(--editor-background);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: dialogSlideIn 0.3s ease;
-}
-
-@keyframes dialogSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.math-dialog h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--editor-text-color);
-}
-
-.math-dialog math-field {
-  width: 100%;
-  min-height: 60px;
-  border: 1px solid var(--editor-border-color);
-  border-radius: 0.25rem;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 16px;
-}
-
-.math-dialog-buttons {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.math-dialog button {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--editor-border-color);
-  background: var(--editor-background);
-  color: var(--editor-text-color);
-  border-radius: 0.25rem;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all var(--transition-duration) ease;
-}
-
-.math-dialog button:hover {
-  background: var(--toolbar-button-hover);
-}
-
-.math-dialog button.primary {
-  background: var(--editor-focus-color);
-  color: white;
-  border-color: var(--editor-focus-color);
-}
-
-.math-dialog button.primary:hover {
-  background: #2563eb;
-}
+/* Math Dialog styles live in mathEquationDialog.css + modals.css */
 
 /* Math Symbol Toolbar */
 .math-symbol-toolbar {

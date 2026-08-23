@@ -7,6 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import { MathfieldElement, ensureMathLiveLoaded } from "../types/mathlive";
+import ModalPortal from "./ModalPortal";
 import "../styles/mathEquationDialog.css";
 
 // Ensure MathLive is loaded (especially important for Next.js)
@@ -411,18 +412,20 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
     );
 
     return (
-      <div
-        className="math-dialog-overlay"
-        onClick={onClose}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="math-dialog-title"
-      >
+      <ModalPortal>
         <div
-          className="math-dialog"
-          ref={dialogRef}
-          onClick={(e) => e.stopPropagation()}
+          className="math-dialog-overlay"
+          onClick={onClose}
+          role="presentation"
         >
+          <div
+            className="math-dialog"
+            ref={dialogRef}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="math-dialog-title"
+          >
           <div className="math-dialog-header">
             <h3 id="math-dialog-title">Insert Math Equation</h3>
             <button
@@ -699,7 +702,8 @@ const MathEquationDialog = forwardRef<HTMLDivElement, MathEquationDialogProps>(
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      </ModalPortal>
     );
   },
 );

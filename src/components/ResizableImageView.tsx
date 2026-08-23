@@ -172,8 +172,8 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
             style={{
               display: "block",
               maxWidth: "100%",
-              width: node.attrs.width || "auto",
-              height: node.attrs.height || "auto",
+              width: node.attrs.width || "100%",
+              height: node.attrs.height === "auto" ? "auto" : node.attrs.height,
               userSelect: "none",
             }}
             dangerouslySetInnerHTML={{ __html: inlineSvgMarkup }}

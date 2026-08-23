@@ -40,12 +40,14 @@ export function svgMarkupToDOMOutputSpec(
     throw new Error("Not valid SVG markup");
   }
 
-  if (size?.width) {
-    svg.setAttribute("width", size.width);
-  }
-  if (size?.height && size.height !== "auto") {
-    svg.setAttribute("height", size.height);
-  }
+    if (size?.width) {
+      svg.setAttribute("width", "100%");
+      svg.style.maxWidth = size.width;
+    } else {
+      svg.setAttribute("width", "100%");
+    }
+    svg.removeAttribute("height");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
   if (!svg.getAttribute("xmlns")) {
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");

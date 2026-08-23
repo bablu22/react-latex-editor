@@ -1,0 +1,99 @@
+/**
+ * Portal-scoped modal styles — immune to host app CSS collisions.
+ * All editor modals render under [data-rle-portal] on document.body.
+ */
+
+[data-rle-portal],
+[data-rle-portal] *,
+[data-rle-portal] *::before,
+[data-rle-portal] *::after {
+  box-sizing: border-box;
+}
+
+[data-rle-portal] .math-dialog-overlay,
+[data-rle-portal] .image-dialog-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+  margin: 0 !important;
+  z-index: 2147483000 !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  overflow: auto !important;
+}
+
+[data-rle-portal] .math-dialog {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(700px, calc(100vw - 2rem)) !important;
+  max-width: min(700px, calc(100vw - 2rem)) !important;
+  max-height: min(90vh, 920px) !important;
+  margin: auto !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+[data-rle-portal] .math-dialog-header,
+[data-rle-portal] .math-dialog-footer {
+  flex-shrink: 0;
+}
+
+[data-rle-portal] .math-toolbar-tabs {
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  max-width: 100% !important;
+}
+
+[data-rle-portal] .math-toolbar-container {
+  max-height: 140px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+[data-rle-portal] .math-examples {
+  max-height: 180px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+[data-rle-portal] .math-editor {
+  flex-shrink: 0;
+}
+
+[data-rle-portal] .image-dialog {
+  position: relative !important;
+  display: block !important;
+  width: min(520px, calc(100vw - 2rem)) !important;
+  max-width: min(520px, calc(100vw - 2rem)) !important;
+  max-height: min(90vh, 720px) !important;
+  margin: auto !important;
+  overflow: auto !important;
+  flex-shrink: 0 !important;
+}
+
+[data-rle-portal] .image-dialog-svg-input {
+  display: block !important;
+  width: 100% !important;
+  min-height: 180px !important;
+  max-height: 50vh !important;
+  resize: vertical !important;
+}
+
+[data-rle-portal] .image-dialog-buttons button {
+  min-width: 88px;
+}
+
+@media (max-width: 640px) {
+  [data-rle-portal] .math-dialog,
+  [data-rle-portal] .image-dialog {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  [data-rle-portal] .math-examples {
+    max-height: 140px;
+  }
+}

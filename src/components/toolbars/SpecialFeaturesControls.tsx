@@ -1,4 +1,5 @@
 import { useCallback, useState, type KeyboardEvent } from "react";
+import ModalPortal from "../ModalPortal";
 import ToolbarButton from "./ToolbarButton";
 import { insertSvg, insertTable } from "../../utils/editorUtils";
 import { isLikelySvgMarkup } from "../../utils/media";
@@ -144,11 +145,12 @@ const SpecialFeaturesControls = ({
       </div>
 
       {showSvgDialog && (
-        <div
-          className="image-dialog-overlay"
-          onClick={closeSvgDialog}
-          role="presentation"
-        >
+        <ModalPortal>
+          <div
+            className="image-dialog-overlay"
+            onClick={closeSvgDialog}
+            role="presentation"
+          >
           <div
             className="image-dialog"
             onClick={(e) => e.stopPropagation()}
@@ -197,7 +199,8 @@ const SpecialFeaturesControls = ({
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       )}
     </>
   );

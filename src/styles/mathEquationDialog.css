@@ -1,19 +1,17 @@
 .math-dialog-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
-  animation: overlayFadeIn 0.2s ease-out;
+  z-index: 2147483000;
+  animation: rleOverlayFadeIn 0.2s ease-out;
   overflow: auto;
+  padding: 1rem;
 }
 
-@keyframes overlayFadeIn {
+@keyframes rleOverlayFadeIn {
   from {
     opacity: 0;
   }
@@ -23,186 +21,187 @@
 }
 
 .math-dialog {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 95vw;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
+  width: min(700px, calc(100vw - 2rem));
+  max-width: min(700px, calc(100vw - 2rem));
+  max-height: min(90vh, 920px);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
-}
-
-@keyframes dialogFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a;
 }
 
 .math-dialog-header {
-  padding: 8px 12px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
-  border-radius: 8px 8px 0 0;
+  background: #f8fafc;
+  border-radius: 10px 10px 0 0;
+  flex-shrink: 0;
 }
 
 .math-dialog-header h3 {
   margin: 0;
-  font-size: 1.1rem;
-  color: #2c3e50;
+  font-size: 1.05rem;
+  color: #0f172a;
   font-weight: 600;
 }
 
 .close-button {
   background: none;
   border: none;
-  font-size: 1.2rem;
-  color: #666;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #64748b;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: all 0.2s;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
 }
 
 .close-button:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #333;
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
 }
 
 .math-toolbar-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
-  padding: 6px 8px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
-  /* overflow-x: auto; */
+  gap: 4px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
   max-width: 100%;
-  scrollbar-width: thin;
 }
 
 .tab-button {
-  padding: 4px 10px;
+  padding: 6px 12px;
   border: none;
   background: none;
-  color: #666;
+  color: #64748b;
   cursor: pointer;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  transition: all 0.2s;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  transition: background 0.2s, color 0.2s;
   white-space: nowrap;
 }
 
 .tab-button:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
 }
 
 .tab-button.active {
-  background: #007bff;
-  color: white;
+  background: #2563eb;
+  color: #fff;
 }
 
 .math-toolbar-container {
-  padding: 8px;
-  border-bottom: 1px solid #e0e0e0;
-  max-height: 120px;
-  /* overflow-y: auto; */
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  max-height: 140px;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .math-toolbar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
-  gap: 12px;
-  max-height: 160px;
-  overflow-y: auto;
-  padding: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 8px;
+  padding: 2px;
 }
 
 .math-symbol-button {
   aspect-ratio: 1;
-  border: 1px solid #e0e0e0;
-  background: white;
-  border-radius: 4px;
+  min-width: 36px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .math-symbol-button:hover {
-  background: #f0f0f0;
-  border-color: #ccc;
-  transform: translateY(-1px);
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .math-examples {
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
-  width: 100%;
-  /* overflow-x: auto; */
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  max-height: 180px;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .math-examples h4 {
-  margin: 0 0 6px 0;
-  color: #2c3e50;
-  font-size: 0.9rem;
+  margin: 0 0 8px;
+  color: #334155;
+  font-size: 0.82rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .equation-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.equation-buttons:last-child {
+  margin-bottom: 0;
 }
 
 .equation-buttons button {
-  padding: 4px 8px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.2s;
+  font-size: 0.78rem;
+  transition: background 0.2s;
   white-space: nowrap;
+  color: #334155;
 }
 
 .equation-buttons button:hover {
-  background: #f0f0f0;
-  border-color: #ccc;
-  transform: translateY(-1px);
+  background: #f1f5f9;
 }
 
 .math-editor {
-  padding: 12px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .math-dialog-math-field {
   width: 100% !important;
-  min-height: 50px !important;
-  font-size: 1.1rem !important;
-  padding: 10px !important;
-  border: 2px solid #e0e0e0 !important;
-  border-radius: 6px !important;
+  min-height: 52px !important;
+  font-size: 1.05rem !important;
+  padding: 10px 12px !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 8px !important;
   background-color: #fff !important;
-  transition: all 0.2s !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
   display: block !important;
   box-sizing: border-box !important;
 }
 
 .math-dialog-math-field:focus {
-  border-color: #007bff !important;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
   outline: none !important;
 }
 
@@ -211,9 +210,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 12px 8px;
-  font-size: 0.85rem;
+  padding: 0 16px 10px;
+  font-size: 0.82rem;
   color: #475569;
+  flex-shrink: 0;
 }
 
 .math-display-mode-toggle label {
@@ -229,84 +229,82 @@
 }
 
 .math-dialog-footer {
-  padding: 8px 12px;
+  padding: 10px 16px;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  background: #f8f9fa;
-  border-radius: 0 0 8px 8px;
-  @media (max-width: 600px) {
-    .math-dialog {
-      max-width: 99vw;
-      width: 99vw;
-      margin: 2vh auto;
-      padding: 0;
-      max-height: 98vh;
-    }
-    .math-dialog-header,
-    .math-dialog-footer {
-      padding: 10px 2vw;
-    }
-    .math-toolbar-tabs {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      gap: 2px;
-      max-width: 100vw;
-      scrollbar-width: thin;
-    }
-    .tab-button {
-      padding: 4px 8px;
-      font-size: 0.95rem;
-    }
-    .math-toolbar-container {
-      max-height: 80px;
-      padding: 0 2vw;
-    }
-    .math-editor {
-      margin: 8px 0;
-      font-size: 0.95rem;
-    }
-  }
+  background: #f8fafc;
+  border-radius: 0 0 10px 10px;
+  flex-shrink: 0;
 }
 
 .cancel-button,
 .save-button {
-  padding: 4px 16px;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 6px;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .cancel-button {
-  background: white;
-  border: 1px solid #e0e0e0;
-  color: #666;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
 }
 
 .save-button {
-  background: #007bff;
+  background: #2563eb;
   border: none;
-  color: white;
+  color: #fff;
 }
 
 .cancel-button:hover {
-  background: #f0f0f0;
-  border-color: #ccc;
+  background: #f8fafc;
 }
 
 .save-button:hover {
-  background: #0056b3;
+  background: #1d4ed8;
 }
 
 .save-button:disabled {
-  background: #6c757d;
+  background: #94a3b8;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
-/* Remove Scrollbar styling */
 .math-dialog::-webkit-scrollbar,
-.math-toolbar-grid::-webkit-scrollbar {
-  display: none;
+.math-toolbar-grid::-webkit-scrollbar,
+.math-examples::-webkit-scrollbar {
+  width: 6px;
+}
+
+.math-dialog::-webkit-scrollbar-thumb,
+.math-toolbar-grid::-webkit-scrollbar-thumb,
+.math-examples::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+@media (max-width: 640px) {
+  .math-dialog {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    max-height: 94vh;
+  }
+
+  .math-toolbar-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .math-examples {
+    max-height: 130px;
+  }
+
+  .math-display-mode-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 }

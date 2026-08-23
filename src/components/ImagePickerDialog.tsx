@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import ModalPortal from "./ModalPortal";
 import { MAX_FILE_SIZE } from "../constants/config";
 import { formatFileSize } from "../utils/helpers";
 import {
@@ -143,14 +144,15 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="image-dialog-overlay" onClick={onClose} role="presentation">
-      <div
-        className="image-dialog"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="image-dialog-title"
-      >
+    <ModalPortal>
+      <div className="image-dialog-overlay" onClick={onClose} role="presentation">
+        <div
+          className="image-dialog"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="image-dialog-title"
+        >
         <h3 id="image-dialog-title">Insert Image / SVG</h3>
 
         <div className="image-dialog-tabs" role="tablist">
@@ -304,6 +306,7 @@ const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 };
 
