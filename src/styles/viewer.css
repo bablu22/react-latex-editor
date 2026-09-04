@@ -191,12 +191,32 @@
 }
 
 .viewer-content .resizable-image-container.is-svg,
-.viewer-content .resizable-image-container.is-svg .inline-svg-host,
-.viewer-content .resizable-image-container.is-svg svg {
-  display: inline-block;
-  width: auto;
+.viewer-content .resizable-image-container.is-svg .inline-svg-host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
   height: auto;
-  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.viewer-content .resizable-image-container.is-svg > svg,
+.viewer-content .resizable-image-container.is-svg .inline-svg-host > svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Nested plot/label layers keep SVG layout — do not force fluid block sizing */
+.viewer-content .resizable-image-container.is-svg svg svg,
+.viewer-content .resizable-image-container.is-svg .inline-svg-host svg svg {
+  display: unset;
+  width: unset;
+  height: unset;
+  max-width: unset;
   margin: 0;
 }
 

@@ -1,4 +1,5 @@
 import { SUPPORTED_IMAGE_FORMATS, MAX_FILE_SIZE } from "../constants/config";
+import { normalizeSvgForResponsive } from "./svgDom";
 
 const IMAGE_EXTENSIONS = /\.(jpe?g|png|gif|webp|svg)$/i;
 
@@ -40,7 +41,8 @@ export function isLikelySvgMarkup(text: string): boolean {
 }
 
 /**
- * Sanitize pasted SVG markup (strip scripts, event handlers, etc.).
+ * Sanitize pasted SVG markup (strip scripts, event handlers, etc.),
+ * then normalize the root SVG for responsive CSS sizing.
  */
 export function sanitizeSvgMarkup(raw: string): string {
   let svg = raw.trim();
@@ -65,7 +67,11 @@ export function sanitizeSvgMarkup(raw: string): string {
     );
   }
 
-  return svg;
+  try {
+    return normalizeSvgForResponsive(svg);
+  } catch {
+    return svg;
+  }
 }
 
 /**

@@ -5,6 +5,7 @@ import ResizableImageView from "../components/ResizableImageView";
 import { dataUrlToSvgMarkup } from "../utils/media";
 import {
   extractSvgMarkupFromElement,
+  normalizeSvgForResponsive,
   svgMarkupToDOMOutputSpec,
 } from "../utils/svgDom";
 
@@ -13,11 +14,17 @@ function resolveSvgContent(attrs: {
   src?: string | null;
   mediaType?: string | null;
 }): string | null {
-  if (attrs.svgContent) return attrs.svgContent;
-  if (attrs.mediaType === "svg" && attrs.src) {
-    return dataUrlToSvgMarkup(attrs.src);
+  let markup: string | null = null;
+  if (attrs.svgContent) markup = attrs.svgContent;
+  else if (attrs.mediaType === "svg" && attrs.src) {
+    markup = dataUrlToSvgMarkup(attrs.src);
   }
-  return null;
+  if (!markup) return null;
+  try {
+    return normalizeSvgForResponsive(markup);
+  } catch {
+    return markup;
+  }
 }
 
 const ResizableImageExtension = Image.extend({
@@ -107,7 +114,7 @@ const ResizableImageExtension = Image.extend({
           "div",
           {
             class: `resizable-image-container align-${align} is-svg`,
-            style: "display: inline-block; width: auto; height: auto;",
+            style: "display: block; width: 100%; max-width: 100%; height: auto;",
           },
           svgSpec,
         ],

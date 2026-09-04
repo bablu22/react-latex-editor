@@ -2,6 +2,7 @@ import { Node } from "@tiptap/pm/model";
 import { NodeViewWrapper } from "@tiptap/react";
 import React, { useCallback, useMemo, useRef } from "react";
 import { dataUrlToSvgMarkup } from "../utils/media";
+import { normalizeSvgForResponsive } from "../utils/svgDom";
 import "./ResizableImageView.css";
 
 interface ImageNodeAttrs {
@@ -52,11 +53,17 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
   }, [node.attrs.mediaType, node.attrs.src, node.attrs.svgContent]);
 
   const inlineSvgMarkup = useMemo(() => {
-    if (node.attrs.svgContent) return node.attrs.svgContent;
-    if (isSvg && node.attrs.src) {
-      return dataUrlToSvgMarkup(node.attrs.src);
+    let markup: string | null = null;
+    if (node.attrs.svgContent) markup = node.attrs.svgContent;
+    else if (isSvg && node.attrs.src) {
+      markup = dataUrlToSvgMarkup(node.attrs.src);
     }
-    return null;
+    if (!markup) return null;
+    try {
+      return normalizeSvgForResponsive(markup);
+    } catch {
+      return markup;
+    }
   }, [node.attrs.svgContent, node.attrs.src, isSvg]);
 
   const handleMouseDown = useCallback(
@@ -157,11 +164,12 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
       data-media-type={isSvg ? "svg" : "image"}
     >
       <div
-        className={`resizable-image-container align-${align}${isSvg ? " is-svg is-svg-natural" : ""}`}
+        className={`resizable-image-container align-${align}${isSvg ? " is-svg" : ""}`}
         style={{
-          width: isSvg ? "auto" : node.attrs.width || "auto",
+          width: isSvg ? "100%" : node.attrs.width || "auto",
+          maxWidth: "100%",
           height: isSvg ? "auto" : node.attrs.height || "auto",
-          display: "inline-block",
+          display: isSvg ? "block" : "inline-block",
           position: "relative",
         }}
       >
@@ -170,8 +178,9 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
           <div
             className="inline-svg-host"
             style={{
-              display: "inline-block",
-              width: "auto",
+              display: "block",
+              width: "100%",
+              maxWidth: "100%",
               height: "auto",
               userSelect: "none",
             }}
@@ -188,9 +197,9 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
             draggable={false}
             style={{
               display: "block",
-              maxWidth: isSvg ? "none" : "100%",
-              width: isSvg ? "auto" : undefined,
-              height: isSvg ? "auto" : "auto",
+              maxWidth: "100%",
+              width: isSvg ? "100%" : undefined,
+              height: "auto",
               userSelect: "none",
             }}
           />

@@ -28,8 +28,21 @@ export function elementToDOMOutputSpec(element: Element): DOMOutputSpec {
   return [element.tagName, attrs, ...children];
 }
 
-/** Preserve intrinsic SVG width/height/viewBox from the source markup. */
-export function svgMarkupToDOMOutputSpec(svgMarkup: string): DOMOutputSpec {
+function parseLength(value: string | null): number | null {
+  if (!value) return null;
+  // Reject percentages — they are not usable for viewBox derivation
+  if (/%\s*$/.test(value.trim())) return null;
+  const match = value.trim().match(/^([\d.]+)(px|pt)?$/i);
+  if (!match) return null;
+  const n = Number(match[1]);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Make a root SVG fluid: ensure viewBox + preserveAspectRatio, strip fixed
+ * root width/height so CSS can size it. Nested child <svg> layers are untouched.
+ */
+export function normalizeSvgForResponsive(svgMarkup: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgMarkup, "image/svg+xml");
   const svg = doc.documentElement;
@@ -42,20 +55,80 @@ export function svgMarkupToDOMOutputSpec(svgMarkup: string): DOMOutputSpec {
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   }
 
+  const hasViewBox =
+    svg.hasAttribute("viewBox") || svg.hasAttribute("viewbox");
+  if (!hasViewBox) {
+    let w = parseLength(svg.getAttribute("width"));
+    let h = parseLength(svg.getAttribute("height"));
+
+    // Nested diagram layers often hold the real canvas size
+    if (!w || !h) {
+      const nested = svg.querySelector(":scope > svg");
+      if (nested) {
+        const vb =
+          nested.getAttribute("viewBox") || nested.getAttribute("viewbox");
+        if (vb) {
+          const p = vb.trim().split(/[\s,]+/).map(Number);
+          if (p.length === 4 && p[2] > 0 && p[3] > 0) {
+            w = w || p[2];
+            h = h || p[3];
+          }
+        }
+        if (!w || !h) {
+          w = w || parseLength(nested.getAttribute("width"));
+          h = h || parseLength(nested.getAttribute("height"));
+        }
+      }
+    }
+
+    if (w && h) {
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    }
+  }
+
+  if (!svg.getAttribute("preserveAspectRatio")) {
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  }
+
+  // CSS owns presentation size; keep geometry via viewBox only.
+  svg.removeAttribute("width");
+  svg.removeAttribute("height");
+
+  return new XMLSerializer().serializeToString(svg);
+}
+
+/** Parse SVG markup into a ProseMirror DOMOutputSpec (responsive-normalized). */
+export function svgMarkupToDOMOutputSpec(svgMarkup: string): DOMOutputSpec {
+  const normalized = normalizeSvgForResponsive(svgMarkup);
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(normalized, "image/svg+xml");
+  const svg = doc.documentElement;
+
+  if (svg.tagName.toLowerCase() !== "svg") {
+    throw new Error("Not valid SVG markup");
+  }
+
   return elementToDOMOutputSpec(svg);
 }
 
 export function extractSvgMarkupFromElement(element: Element): string | null {
+  let markup: string | null = null;
   if (element.tagName.toLowerCase() === "svg") {
-    return element.outerHTML;
+    markup = element.outerHTML;
+  } else {
+    markup = element.querySelector("svg")?.outerHTML ?? null;
   }
-
-  const nested = element.querySelector("svg");
-  return nested?.outerHTML ?? null;
+  if (!markup) return null;
+  try {
+    return normalizeSvgForResponsive(markup);
+  } catch {
+    return markup;
+  }
 }
 
 /**
  * Decode legacy data:image/svg+xml sources back to markup when possible.
+ * Returns responsive-normalized markup when decoding succeeds.
  */
 export function dataUrlToSvgMarkup(src: string): string | null {
   if (!src.startsWith("data:image/svg+xml")) return null;
@@ -67,10 +140,14 @@ export function dataUrlToSvgMarkup(src: string): string | null {
   const payload = src.slice(comma + 1);
 
   try {
-    if (meta.includes(";base64")) {
-      return atob(payload);
+    const raw = meta.includes(";base64")
+      ? atob(payload)
+      : decodeURIComponent(payload);
+    try {
+      return normalizeSvgForResponsive(raw);
+    } catch {
+      return raw;
     }
-    return decodeURIComponent(payload);
   } catch {
     return null;
   }
