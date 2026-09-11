@@ -1,5 +1,7 @@
 import type { DOMOutputSpec } from "@tiptap/pm/model";
 
+type SvgRect = { x: number; y: number; w: number; h: number };
+
 /**
  * Convert a DOM element tree into a ProseMirror DOMOutputSpec (for getHTML()).
  */
@@ -38,9 +40,105 @@ function parseLength(value: string | null): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function parseViewBox(el: Element): SvgRect | null {
+  const raw = el.getAttribute("viewBox") || el.getAttribute("viewbox");
+  if (!raw) return null;
+  const p = raw.trim().split(/[\s,]+/).map(Number);
+  if (p.length === 4 && p.every(Number.isFinite) && p[2] > 0 && p[3] > 0) {
+    return { x: p[0], y: p[1], w: p[2], h: p[3] };
+  }
+  return null;
+}
+
+function unionRect(a: SvgRect, b: SvgRect): SvgRect {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  const right = Math.max(a.x + a.w, b.x + b.w);
+  const bottom = Math.max(a.y + a.h, b.y + b.h);
+  return { x, y, w: right - x, h: bottom - y };
+}
+
+/** Geometry of a nested <svg> in the parent's user space. */
+function nestedSvgExtent(el: Element): SvgRect | null {
+  const x = parseLength(el.getAttribute("x")) ?? 0;
+  const y = parseLength(el.getAttribute("y")) ?? 0;
+  const vb = parseViewBox(el);
+  const w = parseLength(el.getAttribute("width")) ?? vb?.w ?? null;
+  const h = parseLength(el.getAttribute("height")) ?? vb?.h ?? null;
+  if (w && h) return { x, y, w, h };
+  if (vb) return { x: x + vb.x, y: y + vb.y, w: vb.w, h: vb.h };
+  return null;
+}
+
 /**
- * Make a root SVG fluid: ensure viewBox + preserveAspectRatio, strip fixed
- * root width/height so CSS can size it. Nested child <svg> layers are untouched.
+ * Covering rectangle for a root SVG: own viewBox/size unioned with every
+ * direct child <svg> layer. Nested diagrams (plot + labels) often have a
+ * tiny/missing root viewBox while inner layers are hundreds of px wide.
+ */
+export function coveringSvgRect(svg: Element): SvgRect | null {
+  const ownVb = parseViewBox(svg);
+  const ownW = parseLength(svg.getAttribute("width"));
+  const ownH = parseLength(svg.getAttribute("height"));
+
+  let acc: SvgRect | null = null;
+  if (ownVb) acc = ownVb;
+  else if (ownW && ownH) acc = { x: 0, y: 0, w: ownW, h: ownH };
+
+  svg.querySelectorAll("svg").forEach((child) => {
+    const extent = nestedSvgExtent(child);
+    if (extent) acc = acc ? unionRect(acc, extent) : extent;
+  });
+
+  return acc && acc.w > 0 && acc.h > 0 ? acc : null;
+}
+
+function liveBBox(el: SVGGraphicsElement): SvgRect | null {
+  try {
+    const box = el.getBBox();
+    if (box.width > 0 && box.height > 0) {
+      return { x: box.x, y: box.y, w: box.width, h: box.height };
+    }
+  } catch {
+    // getBBox throws if the SVG is not rendered
+  }
+  return null;
+}
+
+function applyCoveringViewBox(svg: Element, live?: SVGSVGElement): SvgRect | null {
+  let extent = coveringSvgRect(svg);
+
+  if (live) {
+    const rootBox = liveBBox(live);
+    if (rootBox) extent = extent ? unionRect(extent, rootBox) : rootBox;
+    live.querySelectorAll("svg").forEach((node) => {
+      const nested = node as SVGSVGElement;
+      const box = liveBBox(nested);
+      if (!box) return;
+      const x = parseLength(nested.getAttribute("x")) ?? 0;
+      const y = parseLength(nested.getAttribute("y")) ?? 0;
+      const mapped = { x: box.x + x, y: box.y + y, w: box.w, h: box.h };
+      extent = extent ? unionRect(extent, mapped) : mapped;
+    });
+  }
+
+  if (extent) {
+    svg.setAttribute(
+      "viewBox",
+      `${extent.x} ${extent.y} ${extent.w} ${extent.h}`,
+    );
+  }
+
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+  svg.removeAttribute("width");
+  svg.removeAttribute("height");
+  return extent;
+}
+
+/**
+ * Make a root SVG fluid: covering viewBox + preserveAspectRatio, strip fixed
+ * root width/height so CSS can size it. Nested child <svg> layers stay in
+ * user units — they must NOT be stretched to 100%.
  */
 export function normalizeSvgForResponsive(svgMarkup: string): string {
   const parser = new DOMParser();
@@ -55,46 +153,130 @@ export function normalizeSvgForResponsive(svgMarkup: string): string {
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   }
 
-  const hasViewBox =
-    svg.hasAttribute("viewBox") || svg.hasAttribute("viewbox");
-  if (!hasViewBox) {
-    let w = parseLength(svg.getAttribute("width"));
-    let h = parseLength(svg.getAttribute("height"));
-
-    // Nested diagram layers often hold the real canvas size
-    if (!w || !h) {
-      const nested = svg.querySelector(":scope > svg");
-      if (nested) {
-        const vb =
-          nested.getAttribute("viewBox") || nested.getAttribute("viewbox");
-        if (vb) {
-          const p = vb.trim().split(/[\s,]+/).map(Number);
-          if (p.length === 4 && p[2] > 0 && p[3] > 0) {
-            w = w || p[2];
-            h = h || p[3];
-          }
-        }
-        if (!w || !h) {
-          w = w || parseLength(nested.getAttribute("width"));
-          h = h || parseLength(nested.getAttribute("height"));
-        }
-      }
-    }
-
-    if (w && h) {
-      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-    }
-  }
-
-  if (!svg.getAttribute("preserveAspectRatio")) {
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  }
-
-  // CSS owns presentation size; keep geometry via viewBox only.
-  svg.removeAttribute("width");
-  svg.removeAttribute("height");
+  applyCoveringViewBox(svg);
 
   return new XMLSerializer().serializeToString(svg);
+}
+
+function isNestedSvg(el: Element): boolean {
+  const parent = el.parentElement;
+  if (!parent) return false;
+  return parent.tagName.toLowerCase() === "svg";
+}
+
+function isMathSvg(el: Element): boolean {
+  return Boolean(el.closest(".katex, .math, math, .mjx-container, .MathJax"));
+}
+
+function isUiIconSvg(el: Element): boolean {
+  if (el.closest("button, a, header, nav, [data-slot='button']")) return true;
+  const cls =
+    el.getAttribute("class") ||
+    (el instanceof SVGElement ? el.className.baseVal : "") ||
+    "";
+  return /\blucide\b/.test(cls);
+}
+
+function isFigureSvg(el: Element): boolean {
+  if (isUiIconSvg(el) || isMathSvg(el) || isNestedSvg(el)) return false;
+  return Boolean(
+    el.closest(
+      ".viewer-content, .resizable-image-container, .inline-svg-host, .is-svg",
+    ),
+  );
+}
+
+function resetOverlayedInnerSvgs(root: SVGSVGElement) {
+  Array.from(root.children)
+    .filter((child) => child.tagName.toLowerCase() === "svg")
+    .forEach((node) => {
+      const inner = node as SVGSVGElement;
+      inner.style.removeProperty("position");
+      inner.style.removeProperty("left");
+      inner.style.removeProperty("top");
+      inner.style.removeProperty("right");
+      inner.style.removeProperty("bottom");
+      inner.style.removeProperty("width");
+      inner.style.removeProperty("height");
+      inner.style.removeProperty("max-width");
+      inner.style.removeProperty("max-height");
+      inner.style.removeProperty("margin");
+      inner.style.removeProperty("display");
+      inner.style.setProperty("overflow", "visible");
+      if (inner.getAttribute("width") === "100%") inner.removeAttribute("width");
+      if (inner.getAttribute("height") === "100%") inner.removeAttribute("height");
+    });
+}
+
+function markFluidHost(host: HTMLElement) {
+  host.classList.add("rle-svg-host");
+  host.classList.remove("rle-svg-host--aspect");
+  host.style.removeProperty("--svg-aspect-ratio");
+  host.style.removeProperty("aspect-ratio");
+  host.style.setProperty("width", "100%");
+  host.style.setProperty("max-width", "100%");
+  host.style.setProperty("min-width", "0");
+  host.style.setProperty("display", "block");
+  host.style.setProperty("position", "relative");
+  host.style.setProperty("box-sizing", "border-box");
+  host.style.setProperty("overflow", "visible");
+  host.style.setProperty("height", "auto");
+}
+
+function ensureFigureHost(svg: SVGSVGElement): HTMLElement | null {
+  const parent = svg.parentElement;
+  if (!(parent instanceof HTMLElement)) return null;
+
+  if (
+    parent.classList.contains("rle-svg-host") ||
+    parent.classList.contains("inline-svg-host") ||
+    parent.classList.contains("resizable-image-container")
+  ) {
+    return parent;
+  }
+
+  const host = document.createElement("div");
+  host.className = "rle-svg-host";
+  parent.insertBefore(host, svg);
+  host.appendChild(svg);
+  return host;
+}
+
+/**
+ * Prepare already-serialized figure SVGs in a live DOM (Viewer / quiz).
+ * Existing saved HTML often has no covering viewBox and leftover overlay styles.
+ */
+export function prepareFigureSvgs(root: ParentNode): void {
+  const svgs = root.querySelectorAll("svg");
+  svgs.forEach((node) => {
+    const svg = node as SVGSVGElement;
+    if (!isFigureSvg(svg)) return;
+
+    resetOverlayedInnerSvgs(svg);
+
+    applyCoveringViewBox(svg, svg);
+    svg.classList.add("rle-svg-root");
+    svg.style.removeProperty("position");
+    svg.style.removeProperty("inset");
+    svg.style.removeProperty("left");
+    svg.style.removeProperty("top");
+    svg.style.setProperty("width", "100%");
+    svg.style.setProperty("height", "auto");
+    svg.style.setProperty("max-width", "100%");
+    svg.style.setProperty("display", "block");
+    svg.style.setProperty("overflow", "visible");
+
+    const host = ensureFigureHost(svg);
+    if (host) {
+      markFluidHost(host);
+      const wrapper = host.closest(".resizable-image-wrapper");
+      if (wrapper instanceof HTMLElement) {
+        wrapper.style.setProperty("width", "100%");
+        wrapper.style.setProperty("max-width", "100%");
+        wrapper.style.setProperty("display", "block");
+      }
+    }
+  });
 }
 
 /** Parse SVG markup into a ProseMirror DOMOutputSpec (responsive-normalized). */

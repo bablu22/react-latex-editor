@@ -877,10 +877,10 @@ math-field {
 }
 
 .resizable-image-container.is-svg .inline-svg-host > svg > svg {
-  display: unset;
-  width: unset;
-  height: unset;
-  max-width: unset;
+  position: static;
+  width: auto;
+  height: auto;
+  max-width: none;
 }
 
 .svg-badge {

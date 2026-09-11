@@ -191,33 +191,42 @@
 }
 
 .viewer-content .resizable-image-container.is-svg,
-.viewer-content .resizable-image-container.is-svg .inline-svg-host {
+.viewer-content .resizable-image-container.is-svg .inline-svg-host,
+.viewer-content .inline-svg-host,
+.viewer-content .rle-svg-host {
   display: block;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   height: auto;
   margin: 0;
   box-sizing: border-box;
+  position: relative;
+  line-height: 0;
+  overflow: visible;
 }
 
 .viewer-content .resizable-image-container.is-svg > svg,
-.viewer-content .resizable-image-container.is-svg .inline-svg-host > svg {
+.viewer-content .resizable-image-container.is-svg .inline-svg-host > svg,
+.viewer-content .inline-svg-host > svg,
+.viewer-content .rle-svg-host > svg,
+.viewer-content svg.rle-svg-root {
   display: block;
   width: 100%;
   max-width: 100%;
   height: auto;
   margin: 0 auto;
   box-sizing: border-box;
+  overflow: visible;
 }
 
-/* Nested plot/label layers keep SVG layout — do not force fluid block sizing */
+/* Nested plot/label layers stay in user units — never overlay/stretch them */
 .viewer-content .resizable-image-container.is-svg svg svg,
-.viewer-content .resizable-image-container.is-svg .inline-svg-host svg svg {
-  display: unset;
-  width: unset;
-  height: unset;
-  max-width: unset;
-  margin: 0;
+.viewer-content .resizable-image-container.is-svg .inline-svg-host svg svg,
+.viewer-content .rle-svg-host svg svg,
+.viewer-content svg.rle-svg-root > svg {
+  position: static;
+  overflow: visible;
 }
 
 .viewer-content table {

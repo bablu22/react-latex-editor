@@ -61,7 +61,11 @@ export {
   svgMarkupToDataUrl,
   filesToImageSources,
 } from "./utils/media";
-export { normalizeSvgForResponsive } from "./utils/svgDom";
+export {
+  normalizeSvgForResponsive,
+  prepareFigureSvgs,
+  coveringSvgRect,
+} from "./utils/svgDom";
 
 // Export hooks
 export { useEditorKeyboard } from "./hooks/useEditorKeyboard";

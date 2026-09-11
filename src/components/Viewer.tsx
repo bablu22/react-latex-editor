@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import "../styles/viewer.css";
+import { prepareFigureSvgs } from "../utils/svgDom";
 
 declare global {
   interface Window {
@@ -179,11 +180,13 @@ export const Viewer = ({
 
     if (!enableMath || !mathJaxReady) {
       contentEl.innerHTML = content || "";
+      prepareFigureSvgs(contentEl);
       return;
     }
 
     if (isProcessingRef.current) {
       contentEl.innerHTML = content || "";
+      prepareFigureSvgs(contentEl);
     }
 
     const processContent = async () => {
@@ -195,6 +198,7 @@ export const Viewer = ({
         }
 
         contentEl.innerHTML = content || "";
+        prepareFigureSvgs(contentEl);
 
         const mathElements = contentEl.querySelectorAll("[data-latex]");
         mathElements.forEach((element: Element) => {
@@ -225,6 +229,10 @@ export const Viewer = ({
           requestId === requestIdRef.current
         ) {
           await window.MathJax.typesetPromise([contentEl]);
+        }
+
+        if (requestId === requestIdRef.current) {
+          prepareFigureSvgs(contentEl);
         }
       } catch (err) {
         console.error("MathJax processing error:", err);
