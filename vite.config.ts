@@ -15,6 +15,8 @@ const external = [
   "lowlight",
   "mathlive",
   /^mathlive\//,
+  "katex",
+  /^katex\//,
 ];
 
 export default defineConfig({

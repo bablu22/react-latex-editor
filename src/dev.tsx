@@ -65,7 +65,7 @@ const DevApp: React.FC = () => {
         <section className="dev-panel dev-preview">
           <div className="dev-panel-header">
             <h2>Live preview</h2>
-            <span className="dev-hint">MathJax render</span>
+            <span className="dev-hint">KaTeX render</span>
           </div>
           <div className="dev-preview-body">
             <Viewer content={content} />

@@ -36,16 +36,23 @@
 
 .viewer-math-block {
   display: block;
-  width: 100%;
-  margin: 0.5em 0;
-  text-align: center;
+  max-width: 100%;
   overflow-x: auto;
-  padding: 0.15rem 0;
+  overflow-y: hidden;
 }
 
 .viewer-math-inline {
   display: inline;
-  padding: 0 0.1em;
+}
+
+/* KaTeX: long inline formulas may wrap at relations/operators. */
+.viewer-content .katex {
+  text-indent: 0;
+}
+
+.editor-viewer-inline,
+.editor-viewer-inline > .viewer-content {
+  display: inline;
 }
 
 .viewer-content .resizable-youtube-wrapper,

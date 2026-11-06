@@ -109,12 +109,17 @@ const ResizableImageExtension = Image.extend({
           style: `text-align: ${textAlign}; width: 100%; display: block;`,
           "data-align": align,
           "data-media-type": "svg",
+          "data-width": node.attrs.width || "360px",
         },
         [
           "div",
           {
             class: `resizable-image-container align-${align} is-svg`,
-            style: "display: block; width: 100%; max-width: 100%; height: auto;",
+            style: `display: block; width: ${
+              node.attrs.width && node.attrs.width !== "auto"
+                ? node.attrs.width
+                : "360px"
+            }; max-width: 100%; height: auto;`,
           },
           svgSpec,
         ],
@@ -207,7 +212,14 @@ const ResizableImageExtension = Image.extend({
       if (!svg) return false;
 
       const align = wrapper.getAttribute("data-align") || "left";
-      const width = svg.getAttribute("width") || "auto";
+      const container = wrapper.querySelector(
+        ".resizable-image-container",
+      ) as HTMLElement | null;
+      const width =
+        wrapper.getAttribute("data-width") ||
+        container?.style.width ||
+        svg.getAttribute("width") ||
+        "360px";
       const height = svg.getAttribute("height") || "auto";
 
       return {

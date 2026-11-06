@@ -71,9 +71,14 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
       e.preventDefault();
       e.stopPropagation();
 
-      const startWidth = parseInt(String(node.attrs.width || "300"), 10) || 300;
+      const startWidth =
+        parseInt(String(node.attrs.width || "360"), 10) || 360;
+      const host = (e.currentTarget as HTMLElement).closest(
+        ".resizable-image-container",
+      ) as HTMLElement | null;
       const startHeight =
-        parseInt(String(node.attrs.height || "200"), 10) || 200;
+        parseInt(String(node.attrs.height || ""), 10) ||
+        Math.round(host?.getBoundingClientRect().height || 200);
 
       resizeRef.current = {
         startX: e.clientX,
@@ -154,6 +159,11 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
     [align],
   );
 
+  const displayWidth =
+    isSvg && (!node.attrs.width || node.attrs.width === "auto")
+      ? "360px"
+      : node.attrs.width || "auto";
+
   return (
     <NodeViewWrapper
       className={`resizable-image-wrapper resizable-image-wrapper-align-${align}${
@@ -162,11 +172,12 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
       style={wrapperStyle}
       data-align={align}
       data-media-type={isSvg ? "svg" : "image"}
+      data-width={isSvg ? displayWidth : undefined}
     >
       <div
         className={`resizable-image-container align-${align}${isSvg ? " is-svg" : ""}`}
         style={{
-          width: isSvg ? "100%" : node.attrs.width || "auto",
+          width: isSvg ? displayWidth : node.attrs.width || "auto",
           maxWidth: "100%",
           height: isSvg ? "auto" : node.attrs.height || "auto",
           display: isSvg ? "block" : "inline-block",
@@ -205,7 +216,7 @@ const ResizableImageView: React.FC<ResizableImageViewProps> = ({
           />
         )}
 
-        {selected && !isSvg && (
+        {selected && (
           <>
             <div
               className="resize-handle resize-handle-bottom-right"

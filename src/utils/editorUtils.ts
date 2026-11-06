@@ -130,7 +130,7 @@ export function insertSvg(
     addImage(editor, {
       ...attrs,
       alt: attrs.alt || options?.alt || "SVG figure",
-      width: attrs.width || "auto",
+      width: attrs.width || options?.width || "360px",
       mediaType: "svg",
     });
   };

@@ -65,7 +65,7 @@ function insertImageNodes(
     const node = imageType.create({
       src: item.src,
       alt: item.alt || "",
-      width: item.width || (item.mediaType === "svg" ? "auto" : "500px"),
+      width: item.width || (item.mediaType === "svg" ? "360px" : "500px"),
       height: "auto",
       mediaType: item.mediaType || "image",
       svgContent: item.svgContent || null,
